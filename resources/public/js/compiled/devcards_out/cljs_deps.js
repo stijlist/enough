@@ -51,5 +51,5 @@ goog.addDependency("../cognitect/transit.js", ['cognitect.transit'], ['com.cogni
 goog.addDependency("../om/transit.js", ['om.transit'], ['cljs.core', 'cognitect.transit', 'om.tempid', 'com.cognitect.transit']);
 goog.addDependency("../om/util.js", ['om.util'], ['cljs.core']);
 goog.addDependency("../om/next.js", ['om.next'], ['om.next.cache', 'clojure.zip', 'om.next.impl.parser', 'goog.string', 'goog.debug.Console', 'cljs.core', 'goog.object', 'goog.log', 'om.next.protocols', 'om.tempid', 'clojure.walk', 'om.transit', 'om.util']);
-goog.addDependency("../playground/core.js", ['playground.core'], ['devcards.core', 'cljs.core', 'sablono.core', 'om.next']);
+goog.addDependency("../playground/core.js", ['playground.core'], ['devcards.core', 'cljs.core', 'cljs.test', 'sablono.core', 'om.next']);
 goog.addDependency("../figwheel/connect.js", ['figwheel.connect'], ['devcards.core', 'cljs.core', 'figwheel.client', 'playground.core', 'figwheel.client.utils']);

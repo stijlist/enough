@@ -2,7 +2,8 @@
   (:require
    [om.next :as om :refer-macros [defui]]
    [sablono.core :refer-macros [html]]
-   [devcards.core :refer-macros [defcard deftest]]))
+   [devcards.core :refer-macros [defcard deftest]]
+   [cljs.test :refer-macros [is testing]]))
 
 (enable-console-print!)
 
@@ -24,33 +25,39 @@
 (defcard simulated-growth
   (years-til-retirement sample-data))
 
-(defcard svg-test
-  (html 
-    [:svg {:class "chart"}
-     [:g {:transform "translate(0,0)"}
-      [:rect {:width 40 :height 19}]
-      [:text {:x 37 :y 9.5 :dy "0.35em"} "4"]]
-     [:g {:transform "translate(0,20)"}
-      [:rect {:width 80 :height 19}]
-      [:text {:x 77 :y 9.5 :dy "0.35em"} "8"]]]))
+(defn multiplier [[domain-start domain-end]
+                  [range-start range-end]]
+  (/ (- range-end range-start) (- domain-end domain-start)))
+
+(defn offset [[domain-start domain-end]
+              [range-start range-end]]
+  (- range-start domain-start))
 
 (defn linear-scale [[domain-start domain-end]
                     [range-start range-end]]
- (let [multiplier (/ (- range-end range-start) (- domain-end domain-start))
-       offset (* multiplier range-start)]
+ (let [multiplier (multiplier [domain-start domain-end] [range-start range-end])
+       offset (offset [domain-start domain-end] [range-start range-end])]
    (fn [domain] (+ offset (* multiplier domain))))) 
-
-#_(defcard test-linear-scale
-  (let [f (linear-scale [0 50] [0 10])]
-    (f 5))) ;; expected is a function that takes 5 and returns 1
 
 (defn translate [x y]
   (str "translate(" x "," y ")"))
 
-(defcard t-x-y (translate 0 40))
-
-(defcard programmatic-svg-test
-  (let [data [4, 8, 15, 16, 23, 42]
+(deftest test-linear-scale
+  (testing "basic offset"
+    (is (= (offset [0 10] [5 15]) 5)))
+  (testing "scale factors other than 1"
+    (is (= ((linear-scale [0 10] [0 50]) 1) 5)))
+  (testing "offset scale factors other than 1"
+    (is (= ((linear-scale [0 10] [5 55]) 1) 10)))
+  (testing "multiplier and offset of inverse scales"
+    (is (= (multiplier [0 10] [10 0]) -1))
+    (is (= (offset [0 10] [10 0]) 10)))
+  (testing "midpoint of inverse scale"
+    (is 
+      (= ((linear-scale [0 10] [10 0]) 5) 5))))
+  
+#_(defcard bar-chart
+  (let [data (years-til-retirement sample-data)
         width 420
         bar-height 20
         x-scale (linear-scale [0 (apply max data)] [0 width])]
@@ -60,9 +67,10 @@
           (fn [i x] 
             [:g {:transform (translate 0 (* i bar-height))}
              [:rect {:width (x-scale x) :height (dec bar-height)}]
-             [:text {:x (- (x-scale x) 3) :y (/ bar-height 2) :dy "0.35em"} x]])
+             [:text {:x (- (x-scale x) 3) :y (/ bar-height 2) :dy "0.35em"} (.toFixed x 2)]])
           data)
           ])))
+
 
 (defn main []
   ;; conditionally start the app based on whether the #main-app-area
