@@ -1792,3 +1792,50 @@ notifying browser that file changed:  out/playground/core.js
 [0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
 notifying browser that file changed:  out/playground/core.js
 [32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.269 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+[31mCompiling "resources/public/js/compiled/playground_devcards.js" failed.
+[0mERROR: Unmatched delimiter ] on file /Users/bert/Dropbox/source/playground/src/playground/core.cljs, line 56, column 62
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.206 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+[31mCompiling "resources/public/js/compiled/playground_devcards.js" failed.
+[0mERROR: Unmatched delimiter ] on file /Users/bert/Dropbox/source/playground/src/playground/core.cljs, line 60, column 80
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.187 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+[31mCompiling "resources/public/js/compiled/playground_devcards.js" failed.
+[0mERROR: Unmatched delimiter ] on file /Users/bert/Dropbox/source/playground/src/playground/core.cljs, line 60, column 81
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.205 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+[31mCompiling "resources/public/js/compiled/playground_devcards.js" failed.
+[0mERROR: Unmatched delimiter ) on file /Users/bert/Dropbox/source/playground/src/playground/core.cljs, line 60, column 86
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.185 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.297 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.281 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.25 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.264 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.28 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.272 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+[31mCompiling "resources/public/js/compiled/playground_devcards.js" failed.
+[0mERROR: Unmatched delimiter ) on file /Users/bert/Dropbox/source/playground/src/playground/core.cljs, line 63, column 70
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.178 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.313 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.289 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.25 seconds.[0m

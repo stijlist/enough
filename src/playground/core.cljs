@@ -44,13 +44,25 @@
   (let [f (linear-scale [0 50] [0 10])]
     (f 5))) ;; expected is a function that takes 5 and returns 1
 
+(defn translate [x y]
+  (str "translate(" x "," y ")"))
+
+(defcard t-x-y (translate 0 40))
+
 (defcard programmatic-svg-test
   (let [data [4, 8, 15, 16, 23, 42]
         width 420
         bar-height 20
-        x-scale (range 0 (apply max data))]))
-
-    
+        x-scale (linear-scale [0 (apply max data)] [0 width])]
+    (html 
+      [:svg {:width width :height (* bar-height (count data)) :class "chart"}
+        (map-indexed 
+          (fn [i x] 
+            [:g {:transform (translate 0 (* i bar-height))}
+             [:rect {:width (x-scale x) :height (dec bar-height)}]
+             [:text {:x (- (x-scale x) 3) :y (/ bar-height 2) :dy "0.35em"} x]])
+          data)
+          ])))
 
 (defn main []
   ;; conditionally start the app based on whether the #main-app-area
