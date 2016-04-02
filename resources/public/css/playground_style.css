@@ -1,2 +1,10 @@
 /* playground CSS */
 /* .com-rigsomelight-devcards_rendered-card > * { display: -webkit-flex } */
+.chart rect {
+  fill: steelblue;
+}
+.chart text {
+  fill: white;
+  font: 10px sans-serif;
+  text-anchor: end;
+}

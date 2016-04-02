@@ -26,9 +26,31 @@
 
 (defcard svg-test
   (html 
-    [:svg 
-     [:rect {:fill "black" :width "10" :height "100" :x "10" :y "10"}]
-     [:text {:x 30 :y 30} "hello world"]]))
+    [:svg {:class "chart"}
+     [:g {:transform "translate(0,0)"}
+      [:rect {:width 40 :height 19}]
+      [:text {:x 37 :y 9.5 :dy "0.35em"} "4"]]
+     [:g {:transform "translate(0,20)"}
+      [:rect {:width 80 :height 19}]
+      [:text {:x 77 :y 9.5 :dy "0.35em"} "8"]]]))
+
+(defn linear-scale [[domain-start domain-end]
+                    [range-start range-end]]
+ (let [multiplier (/ (- range-end range-start) (- domain-end domain-start))
+       offset (* multiplier range-start)]
+   (fn [domain] (+ offset (* multiplier domain))))) 
+
+#_(defcard test-linear-scale
+  (let [f (linear-scale [0 50] [0 10])]
+    (f 5))) ;; expected is a function that takes 5 and returns 1
+
+(defcard programmatic-svg-test
+  (let [data [4, 8, 15, 16, 23, 42]
+        width 420
+        bar-height 20
+        x-scale (range 0 (apply max data))]))
+
+    
 
 (defn main []
   ;; conditionally start the app based on whether the #main-app-area
