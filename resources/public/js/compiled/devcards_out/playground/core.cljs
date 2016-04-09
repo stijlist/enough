@@ -55,7 +55,8 @@
   (testing "midpoint of inverse scale"
     (is 
       (= ((linear-scale [0 10] [10 0]) 5) 5))))
-  
+
+
 #_(defcard bar-chart
   (let [data (years-til-retirement sample-data)
         width 420
@@ -71,6 +72,22 @@
           data)
           ])))
 
+(defcard column-chart
+  (let [data (->> (years-til-retirement sample-data) (map #(/ % 1000)) (map int))
+        width 300
+        height 150
+        y-scale (linear-scale [0 (apply max data)] [0 height])
+        bar-width (/ width (count data))]
+     (html 
+       [:svg {:class "chart"}
+         (map-indexed 
+           (fn [i d]
+             (println "i is: " i)
+             (println (* i bar-width))
+             [:g {:transform (translate (* i bar-width) 0)}
+              [:rect {:y (- height (y-scale d)) :height (y-scale d) :width (dec bar-width)}]
+              [:text {:x (/ bar-width 2) :y height #_(+ (y-scale d) 5) :dy "0.15em" :color "red"} d]])
+           data)])))
 
 (defn main []
   ;; conditionally start the app based on whether the #main-app-area
