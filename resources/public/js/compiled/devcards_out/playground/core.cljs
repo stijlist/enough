@@ -72,7 +72,7 @@
     (let [value (get @state k)
           editing? (contains? (get @state :editing) k)]
       (if editing? 
-        [:div nil
+        [:div nil ;; TODO: use forms so we get keyevent handling for free
          [:input {:type "text"}]
          [:button 
           {:onClick 
@@ -82,7 +82,8 @@
                  (-> s
                    (update-in [:editing] #(disj % k))
                    (update-in [k] 
-                     #(coerce-to-type-of v (.. e -target -parentElement -firstElementChild -value)))))))}
+                     #(coerce-to-type-of v 
+                       (.. e -target -parentElement -firstElementChild -value)))))))}
           "Done"]]
         [:div {:onClick 
                #(swap! state update-in [:editing] (fn [ks] (if ks (conj ks k) #{k})))}
@@ -103,7 +104,7 @@
     (println @state)
     (html 
       [:div nil
-       [:div nil (editable-parameter state (first @state))]
+       [:div nil (map (partial editable-parameter state) (dissoc @state :editing))]
        [:div 
         (if (not-every? number? (retirement-vals @state))
           "Waiting..."
