@@ -67,9 +67,7 @@
   (is (= (coerce-to-type-of "a" 1) "1"))
   (is (= (coerce-to-type-of 1 "1") 1)))
 
-;; TODO: postcondition that the output type is the same as the input type
 (defn editable-parameter [state [k v]]
-  #_{:post [(= (type %) (type v))]}
   (html 
     (let [value (get @state k)
           editing? (contains? (get @state :editing) k)]
@@ -79,8 +77,12 @@
          [:button 
           {:onClick 
            (fn [e] 
-             (swap! state update-in [k] 
-               #(coerce-to-type-of v (.. e -target -parentElement -firstElementChild -value))))}
+             (swap! state 
+               (fn [s] 
+                 (-> s
+                   (update-in [:editing] #(disj % k))
+                   (update-in [k] 
+                     #(coerce-to-type-of v (.. e -target -parentElement -firstElementChild -value)))))))}
           "Done"]]
         [:div {:onClick 
                #(swap! state update-in [:editing] (fn [ks] (if ks (conj ks k) #{k})))}
