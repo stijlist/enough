@@ -13,7 +13,6 @@
 (defn years-til-retirement
   [{:keys [salary expenses rate-of-return cutoff]}]
   {:pre [(every? number? [salary expenses rate-of-return])]}
-  (print cutoff)
   (loop [years [0]]
     (let [balance (peek years)
           growth (* balance rate-of-return)
@@ -46,7 +45,7 @@
              [:rect 
               {:y (- height (y-scale d)) :height (y-scale d) :width (dec bar-width)}]
              [:text 
-              {:x (+ 7 (/ bar-width 2)) :y (- height 3) :dy "0.15em" :color "red"} 
+              {:x (+ 7 (/ bar-width 2)) :y (- height 3) :dy "0.15em"} 
               (thousands->k d)]])
           data)])))
 
@@ -82,7 +81,6 @@
 
 (defcard interactive-chart
   (fn [state owner]
-    (println @state)
     (html 
       [:div nil
        [:div nil (map (partial editable-parameter state) (dissoc @state :editing))]
