@@ -66,14 +66,14 @@ throw cljs.core.missing_protocol.call(null,"ToURI.to-uri",x);
  */
 sablono.util.as_str = (function sablono$util$as_str(var_args){
 var args__17884__auto__ = [];
-var len__17877__auto___30481 = arguments.length;
-var i__17878__auto___30482 = (0);
+var len__17877__auto___26996 = arguments.length;
+var i__17878__auto___26997 = (0);
 while(true){
-if((i__17878__auto___30482 < len__17877__auto___30481)){
-args__17884__auto__.push((arguments[i__17878__auto___30482]));
+if((i__17878__auto___26997 < len__17877__auto___26996)){
+args__17884__auto__.push((arguments[i__17878__auto___26997]));
 
-var G__30483 = (i__17878__auto___30482 + (1));
-i__17878__auto___30482 = G__30483;
+var G__26998 = (i__17878__auto___26997 + (1));
+i__17878__auto___26997 = G__26998;
 continue;
 } else {
 }
@@ -90,17 +90,17 @@ return cljs.core.apply.call(null,cljs.core.str,cljs.core.map.call(null,sablono.u
 
 sablono.util.as_str.cljs$lang$maxFixedArity = (0);
 
-sablono.util.as_str.cljs$lang$applyTo = (function (seq30480){
-return sablono.util.as_str.cljs$core$IFn$_invoke$arity$variadic(cljs.core.seq.call(null,seq30480));
+sablono.util.as_str.cljs$lang$applyTo = (function (seq26995){
+return sablono.util.as_str.cljs$core$IFn$_invoke$arity$variadic(cljs.core.seq.call(null,seq26995));
 });
 /**
  * Returns camel case version of the key, e.g. :http-equiv becomes :httpEquiv.
  */
 sablono.util.camel_case = (function sablono$util$camel_case(k){
 if(cljs.core.truth_(k)){
-var vec__30485 = clojure.string.split.call(null,cljs.core.name.call(null,k),/-/);
-var first_word = cljs.core.nth.call(null,vec__30485,(0),null);
-var words = cljs.core.nthnext.call(null,vec__30485,(1));
+var vec__27000 = clojure.string.split.call(null,cljs.core.name.call(null,k),/-/);
+var first_word = cljs.core.nth.call(null,vec__27000,(0),null);
+var words = cljs.core.nthnext.call(null,vec__27000,(1));
 if((cljs.core.empty_QMARK_.call(null,words)) || (cljs.core._EQ_.call(null,"aria",first_word)) || (cljs.core._EQ_.call(null,"data",first_word))){
 return k;
 } else {
@@ -117,9 +117,9 @@ sablono.util.camel_case_keys = (function sablono$util$camel_case_keys(m){
 if(cljs.core.map_QMARK_.call(null,m)){
 var ks = cljs.core.keys.call(null,m);
 var kmap = cljs.core.zipmap.call(null,ks,cljs.core.map.call(null,sablono.util.camel_case,ks));
-var G__30487 = clojure.set.rename_keys.call(null,m,kmap);
-var G__30487__$1 = ((cljs.core.map_QMARK_.call(null,new cljs.core.Keyword(null,"style","style",-496642736).cljs$core$IFn$_invoke$arity$1(m)))?cljs.core.update_in.call(null,G__30487,new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null,"style","style",-496642736)], null),sablono$util$camel_case_keys):G__30487);
-return G__30487__$1;
+var G__27002 = clojure.set.rename_keys.call(null,m,kmap);
+var G__27002__$1 = ((cljs.core.map_QMARK_.call(null,new cljs.core.Keyword(null,"style","style",-496642736).cljs$core$IFn$_invoke$arity$1(m)))?cljs.core.update_in.call(null,G__27002,new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null,"style","style",-496642736)], null),sablono$util$camel_case_keys):G__27002);
+return G__27002__$1;
 } else {
 return m;
 }
@@ -218,4 +218,4 @@ return x__$1;
 return (new goog.Uri([cljs.core.str(x)].join('')));
 }));
 
-//# sourceMappingURL=util.js.map?rel=1460338558930
+//# sourceMappingURL=util.js.map?rel=1460363590053

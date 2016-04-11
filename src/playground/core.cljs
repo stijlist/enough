@@ -12,6 +12,7 @@
 
 (defn years-til-retirement
   [{:keys [salary expenses rate-of-return]}]
+  {:pre [(every? number? [salary expenses rate-of-return])]}
   (loop [years [0]]
     (let [balance (peek years)
           growth (* balance rate-of-return)
@@ -21,9 +22,6 @@
         (recur (conj years new-balance))))))
 
 (def sample-data {:salary 40000 :expenses 20000 :rate-of-return 0.05})
-
-(defcard simulated-growth
-  (years-til-retirement sample-data))
 
 (defn multiplier [[domain-start domain-end]
                   [range-start range-end]]
@@ -41,20 +39,6 @@
 
 (defn translate [x y]
   (str "translate(" x "," y ")"))
-
-(deftest test-linear-scale
-  (testing "basic offset"
-    (is (= (offset [0 10] [5 15]) 5)))
-  (testing "scale factors other than 1"
-    (is (= ((linear-scale [0 10] [0 50]) 1) 5)))
-  (testing "offset scale factors other than 1"
-    (is (= ((linear-scale [0 10] [5 55]) 1) 10)))
-  (testing "multiplier and offset of inverse scales"
-    (is (= (multiplier [0 10] [10 0]) -1))
-    (is (= (offset [0 10] [10 0]) 10)))
-  (testing "midpoint of inverse scale"
-    (is 
-      (= ((linear-scale [0 10] [10 0]) 5) 5))))
 
 (defn display-thousands [n]
   (str (int (/ n 1000)) "k"))
@@ -74,35 +58,55 @@
               (display-thousands d)]])
           data)])))
 
-(defcard column-chart
-  (column-chart (years-til-retirement sample-data) 420 150))
+(defn coerce-to-type-of [orig v]
+  (condp = (type orig)
+    js/Number (js/Number v)
+    js/String (js/String v)))
+
+(deftest coercion-to-example-type
+  (is (= (coerce-to-type-of "a" 1) "1"))
+  (is (= (coerce-to-type-of 1 "1") 1)))
 
 ;; TODO: postcondition that the output type is the same as the input type
 (defn editable-parameter [state [k v]]
+  #_{:post [(= (type %) (type v))]}
   (html 
     (let [value (get @state k)
-          editing? (= :editing value)]
+          editing? (contains? (get @state :editing) k)]
       (if editing? 
         [:div nil
          [:input {:type "text"}]
          [:button 
           {:onClick 
-           #(swap! state update-in [k] 
-             (fn [e] (.. e -target -parentElement -firstElementChild -value)))}
+           (fn [e] 
+             (swap! state update-in [k] 
+               #(coerce-to-type-of v (.. e -target -parentElement -firstElementChild -value))))}
           "Done"]]
         [:div {:onClick 
-               #(swap! state update-in [k] (constantly :editing))}
+               #(swap! state update-in [:editing] (fn [ks] (if ks (conj ks k) #{k})))}
          (str value)]))))
+
+(defcard editable-parameters
+  (fn [state owner]
+    (html 
+      [:div nil
+       (map #(editable-parameter state %) @state)]))
+  {:saying "roses are red" :number 1})
+
+(defn retirement-vals [m]
+  (vals (select-keys m [:salary :expenses :rate-of-return])))
 
 (defcard interactive-chart
   (fn [state owner]
     (println @state)
     (html 
       [:div nil
-       ; (map #(editable-parameter state %) @state)
+       [:div nil (editable-parameter state (first @state))]
        [:div 
-        (column-chart (years-til-retirement @state) 420 150)]]))
-  {:salary 40000 :expenses 20000 :rate-of-return 0.05})
+        (if (not-every? number? (retirement-vals @state))
+          "Waiting..."
+          (column-chart (years-til-retirement @state) 420 150))]]))
+  {:salary 40000 :expenses 20000 :rate-of-return 0.05 :editing #{}})
 
 (defn main []
   ;; conditionally start the app based on whether the #main-app-area
