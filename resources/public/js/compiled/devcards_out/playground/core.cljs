@@ -59,23 +59,50 @@
 (defn display-thousands [n]
   (str (int (/ n 1000)) "k"))
 
-(defcard column-chart
-  (let [data (years-til-retirement sample-data)
-        width 420
-        height 150
-        y-scale (linear-scale [0 (apply max data)] [0 height])
+(defn column-chart [data width height]
+  (let [y-scale (linear-scale [0 (apply max data)] [0 height])
         bar-width (/ width (count data))]
-     (html 
-       [:svg {:class "chart" :height height :width width}
-         (map-indexed 
-           (fn [i d]
-             [:g {:transform (translate (* i bar-width) 0)}
-              [:rect 
-               {:y (- height (y-scale d)) :height (y-scale d) :width (dec bar-width)}]
-              [:text 
-               {:x (+ 7 (/ bar-width 2)) :y (- height 3) :dy "0.15em" :color "red"} 
-               (display-thousands d)]])
-           data)])))  
+    (html 
+      [:svg {:class "chart" :height height :width width}
+        (map-indexed 
+          (fn [i d]
+            [:g {:transform (translate (* i bar-width) 0)}
+             [:rect 
+              {:y (- height (y-scale d)) :height (y-scale d) :width (dec bar-width)}]
+             [:text 
+              {:x (+ 7 (/ bar-width 2)) :y (- height 3) :dy "0.15em" :color "red"} 
+              (display-thousands d)]])
+          data)])))
+
+(defcard column-chart
+  (column-chart (years-til-retirement sample-data) 420 150))
+
+;; TODO: postcondition that the output type is the same as the input type
+(defn editable-parameter [[k v] state]
+  (html 
+    (let [editing? (= :editing (get @state k))]
+      (if editing? 
+        [:div nil
+         [:input {:type "text"}]
+         [:button 
+          {:onClick 
+           (fn [e]
+            (let [input (.. e -target -parentElement -firstElementChild -value)]
+              (swap! state update-in [k] (constantly input))))} 
+          "Done"]]
+        [:div {:onClick 
+               #(swap! state update-in [k] (constantly :editing))}
+         (get @state k)]))))
+
+(defcard interactive-chart
+  (fn [state owner]
+    (println @state)
+    (html 
+      [:div nil
+       (editable-parameter [:something (:something @state)] state)
+       [:div 
+        (column-chart (years-til-retirement (:data @state)) 420 150)]]))
+  {:something "hello" :data {:salary 40000 :expenses 20000 :rate-of-return 0.05}})
 
 (defn main []
   ;; conditionally start the app based on whether the #main-app-area
