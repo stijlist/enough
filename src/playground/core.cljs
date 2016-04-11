@@ -11,13 +11,15 @@
   (html [:div [:h1 "How much is enough?"]]))
 
 (defn years-til-retirement
-  [{:keys [salary expenses rate-of-return]}]
+  [{:keys [salary expenses rate-of-return cutoff]}]
   {:pre [(every? number? [salary expenses rate-of-return])]}
+  (print cutoff)
   (loop [years [0]]
     (let [balance (peek years)
           growth (* balance rate-of-return)
-          new-balance (- (+ balance salary growth) expenses)]
-      (if (>= growth expenses)
+          new-balance (- (+ balance salary growth) expenses)
+          done? (if cutoff (>= (count years) cutoff) (>= growth expenses))]
+      (if done?
         years
         (recur (conj years new-balance))))))
 
@@ -40,7 +42,7 @@
 (defn translate [x y]
   (str "translate(" x "," y ")"))
 
-(defn display-thousands [n]
+(defn thousands->k [n]
   (str (int (/ n 1000)) "k"))
 
 (defn column-chart [data width height]
@@ -55,17 +57,13 @@
               {:y (- height (y-scale d)) :height (y-scale d) :width (dec bar-width)}]
              [:text 
               {:x (+ 7 (/ bar-width 2)) :y (- height 3) :dy "0.15em" :color "red"} 
-              (display-thousands d)]])
+              (thousands->k d)]])
           data)])))
 
 (defn coerce-to-type-of [orig v]
   (condp = (type orig)
     js/Number (js/Number v)
     js/String (js/String v)))
-
-(deftest coercion-to-example-type
-  (is (= (coerce-to-type-of "a" 1) "1"))
-  (is (= (coerce-to-type-of 1 "1") 1)))
 
 (defn editable-parameter [state [k v]]
   (html 
@@ -89,13 +87,6 @@
                #(swap! state update-in [:editing] (fn [ks] (if ks (conj ks k) #{k})))}
          (str value)]))))
 
-(defcard editable-parameters
-  (fn [state owner]
-    (html 
-      [:div nil
-       (map #(editable-parameter state %) @state)]))
-  {:saying "roses are red" :number 1})
-
 (defn retirement-vals [m]
   (vals (select-keys m [:salary :expenses :rate-of-return])))
 
@@ -109,7 +100,7 @@
         (if (not-every? number? (retirement-vals @state))
           "Waiting..."
           (column-chart (years-til-retirement @state) 420 150))]]))
-  {:salary 40000 :expenses 20000 :rate-of-return 0.05 :editing #{}})
+  {:salary 40000 :expenses 20000 :rate-of-return 0.05 :cutoff 20 :editing #{}})
 
 (defn main []
   ;; conditionally start the app based on whether the #main-app-area
