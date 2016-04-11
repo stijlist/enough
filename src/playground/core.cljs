@@ -78,31 +78,31 @@
   (column-chart (years-til-retirement sample-data) 420 150))
 
 ;; TODO: postcondition that the output type is the same as the input type
-(defn editable-parameter [[k v] state]
+(defn editable-parameter [state [k v]]
   (html 
-    (let [editing? (= :editing (get @state k))]
+    (let [value (get @state k)
+          editing? (= :editing value)]
       (if editing? 
         [:div nil
          [:input {:type "text"}]
          [:button 
           {:onClick 
-           (fn [e]
-            (let [input (.. e -target -parentElement -firstElementChild -value)]
-              (swap! state update-in [k] (constantly input))))} 
+           #(swap! state update-in [k] 
+             (fn [e] (.. e -target -parentElement -firstElementChild -value)))}
           "Done"]]
         [:div {:onClick 
                #(swap! state update-in [k] (constantly :editing))}
-         (get @state k)]))))
+         (str value)]))))
 
 (defcard interactive-chart
   (fn [state owner]
     (println @state)
     (html 
       [:div nil
-       (editable-parameter [:something (:something @state)] state)
+       ; (map #(editable-parameter state %) @state)
        [:div 
-        (column-chart (years-til-retirement (:data @state)) 420 150)]]))
-  {:something "hello" :data {:salary 40000 :expenses 20000 :rate-of-return 0.05}})
+        (column-chart (years-til-retirement @state) 420 150)]]))
+  {:salary 40000 :expenses 20000 :rate-of-return 0.05})
 
 (defn main []
   ;; conditionally start the app based on whether the #main-app-area
