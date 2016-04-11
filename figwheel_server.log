@@ -2853,3 +2853,6 @@ notifying browser that file changed:  out/playground/core.js
 [0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
 notifying browser that file changed:  out/playground/core.js
 [32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.296 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.302 seconds.[0m

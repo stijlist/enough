@@ -23,20 +23,10 @@
         years
         (recur (conj years new-balance))))))
 
-(def sample-data {:salary 40000 :expenses 20000 :rate-of-return 0.05})
-
-(defn multiplier [[domain-start domain-end]
-                  [range-start range-end]]
-  (/ (- range-end range-start) (- domain-end domain-start)))
-
-(defn offset [[domain-start domain-end]
-              [range-start range-end]]
-  (- range-start domain-start))
-
 (defn linear-scale [[domain-start domain-end]
                     [range-start range-end]]
- (let [multiplier (multiplier [domain-start domain-end] [range-start range-end])
-       offset (offset [domain-start domain-end] [range-start range-end])]
+ (let [multiplier (/ (- range-end range-start) (- domain-end domain-start))
+       offset (- range-start domain-start)]
    (fn [domain] (+ offset (* multiplier domain))))) 
 
 (defn translate [x y]
