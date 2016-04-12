@@ -34,20 +34,25 @@
 (defn thousands->k [n]
   (str (int (/ n 1000)) "k"))
 
-(defn column-chart [data width height]
-  (let [y-scale (linear-scale [0 (apply max data)] [0 height])
-        bar-width (/ width (count data))]
-    (html 
-      [:svg {:class "chart" :height height :width width}
-        (map-indexed 
-          (fn [i d]
-            [:g {:transform (translate (* i bar-width) 0)}
-             [:rect 
-              {:y (- height (y-scale d)) :height (y-scale d) :width (dec bar-width)}]
-             [:text 
-              {:x (+ 7 (/ bar-width 2)) :y (- height 3) :dy "0.15em"} 
-              (thousands->k d)]])
-          data)])))
+(defui ColumnChart
+  Object
+  (render [this]
+    (let [{:keys [data width height]} (om/props this)
+          y-scale (linear-scale [0 (apply max data)] [0 height])
+          bar-width (/ width (count data))]
+      (html 
+        [:svg {:class "chart" :height height :width width}
+         (map-indexed 
+           (fn [i d]
+             [:g {:transform (translate (* i bar-width) 0)}
+              [:rect 
+               {:y (- height (y-scale d)) :height (y-scale d) :width (dec bar-width)}]
+              [:text 
+               {:x (+ 7 (/ bar-width 2)) :y (- height 3) :dy "0.15em"} 
+               (thousands->k d)]])
+           data)]))))
+
+(def column-chart (om/factory ColumnChart))
 
 (defn coerce-to-type-of [orig v]
   (condp = (type orig)
@@ -81,14 +86,14 @@
 
 (defcard interactive-chart
   (fn [state owner]
-    (html 
-      [:div nil
-       [:div nil (map (partial editable-parameter state) (dissoc @state :editing))]
-       [:div 
-        (if (not-every? number? (retirement-vals @state))
-          "Waiting..."
-          (column-chart (years-til-retirement @state) 420 150))]]))
-  {:salary 40000 :expenses 20000 :rate-of-return 0.05 :cutoff 20 :editing #{}})
+    (let [chart-data (years-til-retirement @state)]
+      (html 
+        [:div nil
+         [:div nil (map (partial editable-parameter state) (dissoc @state :editing))]
+         [:div nil "Years til retirement: " (count chart-data)]
+         [:div nil
+          (column-chart {:data chart-data :width 420 :height 150})]])))
+  {:salary 40000 :expenses 20000 :rate-of-return 0.05 :editing #{}})
 
 (defn main []
   ;; conditionally start the app based on whether the #main-app-area
