@@ -59,40 +59,63 @@
     js/Number (js/Number v)
     js/String (js/String v)))
 
-(defn editable-parameter [state [k v]]
-  (html 
-    (let [value (get @state k)
+(defn trigger-edit [{:keys [state k]}]
+  (fn [] 
+    (prn "triggered edit")
+    (swap! state update-in [:editing] (fn [ks] (conj ks k)))
+    (prn "state after edit" @state)))
+
+(defn input-complete [{:keys [state k v]}]
+  (fn [e] 
+    (swap! state 
+      (fn [s] 
+        (-> s
+          (update-in [:editing] #(disj % k))
+          (update-in [k] 
+            #(coerce-to-type-of v 
+              (.. e -target -parentElement -firstElementChild -value))))))))
+ 
+
+;; TODO: re-renders aren't happening; why?
+(defui EditableParameter
+  Object
+  (render [this]
+    (let [{:keys [state k]} (om/props this)
+          ; TODO: not sure of the value of making these computed
+          ; {:keys [input-complete trigger-edit]} (om/get-computed this)
+          v (get @state k)
           editing? (contains? (get @state :editing) k)]
-      (if editing? 
-        [:div nil ;; TODO: use forms so we get keyevent handling for free
-         [:input {:type "text"}]
-         [:button 
-          {:onClick 
-           (fn [e] 
-             (swap! state 
-               (fn [s] 
-                 (-> s
-                   (update-in [:editing] #(disj % k))
-                   (update-in [k] 
-                     #(coerce-to-type-of v 
-                       (.. e -target -parentElement -firstElementChild -value)))))))}
-          "Done"]]
-        [:div {:onClick 
-               #(swap! state update-in [:editing] (fn [ks] (if ks (conj ks k) #{k})))}
-         (str value)]))))
+      (prn (str "key: " k " val: " v " editing: " editing?))
+      (html
+        (if editing? 
+          [:div nil ;; TODO: use forms so we get keyevent handling for free
+           [:input {:type "text"}]
+           [:button {:onClick (input-complete {:state state :k k :v v})} "Done"]]
+          [:div nil (str v) [:button {:onClick (trigger-edit {:state state :k k})} "Edit"]])))))
+
+(def editable-parameter (om/factory EditableParameter))
+
+(defui InteractiveChart
+  Object
+  (render [this]
+    (let [state (om/get-props this)
+          _ (prn state)
+          chart-data (years-til-retirement state)]
+      (html 
+        [:div nil
+         [:div nil (map #(editable-parameter {:state state :k (first %) :v (second %)}) @state)]
+         [:div nil "Years til retirement: " (count chart-data)]
+         [:div nil
+          (column-chart {:data chart-data :width 420 :height 150})]]))))
+
+(def interactive-chart (om/factory InteractiveChart))
 
 (defn retirement-vals [m]
   (vals (select-keys m [:salary :expenses :rate-of-return])))
 
 (defcard interactive-chart
-  (fn [state owner]
-    (let [chart-data (years-til-retirement @state)]
-      (html 
-        [:div nil
-         [:div nil (map (partial editable-parameter state) (dissoc @state :editing))]
-         [:div nil "Years til retirement: " (count chart-data)]
-         [:div nil
-          (column-chart {:data chart-data :width 420 :height 150})]])))
+  (fn [state _]
+    (interactive-chart state))
   {:salary 40000 :expenses 20000 :rate-of-return 0.05 :editing #{}})
 
 (defn main []

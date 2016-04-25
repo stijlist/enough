@@ -2868,3 +2868,83 @@ notifying browser that file changed:  out/playground/core.js
 [0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
 notifying browser that file changed:  out/playground/core.js
 [32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.306 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  resources/public/js/compiled/devcards_out/goog/deps.js
+notifying browser that file changed:  resources/public/js/compiled/devcards_out/cljs_deps.js
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.602 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.439 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.434 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.438 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+[31mCompiling "resources/public/js/compiled/playground_devcards.js" failed.
+[0mANALYSIS ERROR: Parameter declaration update-in should be a vector at line 77 /Users/bert/Dropbox/source/playground/src/playground/core.cljs on file /Users/bert/Dropbox/source/playground/src/playground/core.cljs, line 77, column 11
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.327 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 1.225 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.427 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.429 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.416 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.474 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.443 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+WARNING: Use of undeclared Var playground.core/v at line 86 /Users/bert/Dropbox/source/playground/src/playground/core.cljs
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.495 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.414 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+WARNING: Use of undeclared Var playground.core/state at line 101 /Users/bert/Dropbox/source/playground/src/playground/core.cljs
+WARNING: Use of undeclared Var playground.core/state at line 105 /Users/bert/Dropbox/source/playground/src/playground/core.cljs
+WARNING: Use of undeclared Var playground.core/state at line 105 /Users/bert/Dropbox/source/playground/src/playground/core.cljs
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 1.34 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+WARNING: Use of undeclared Var playground.core/state at line 101 /Users/bert/Dropbox/source/playground/src/playground/core.cljs
+WARNING: Use of undeclared Var playground.core/state at line 104 /Users/bert/Dropbox/source/playground/src/playground/core.cljs
+WARNING: Use of undeclared Var playground.core/state at line 104 /Users/bert/Dropbox/source/playground/src/playground/core.cljs
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 1.064 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.933 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.495 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.452 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.531 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.457 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.901 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+[31mCompiling "resources/public/js/compiled/playground_devcards.js" failed.
+[0mANALYSIS ERROR: let requires an even number of forms in binding vector at line 101 /Users/bert/Dropbox/source/playground/src/playground/core.cljs on file /Users/bert/Dropbox/source/playground/src/playground/core.cljs, line 101, column 5
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.658 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.799 seconds.[0m
