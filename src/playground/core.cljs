@@ -80,7 +80,8 @@
 (defui EditableParameter
   Object
   (render [this]
-    (let [{:keys [state k]} (om/props this)
+    (let [_ (prn "The props: " (om/props this))
+          {:keys [state k]} (om/props this)
           ; TODO: not sure of the value of making these computed
           ; {:keys [input-complete trigger-edit]} (om/get-computed this)
           v (get @state k)
@@ -98,9 +99,9 @@
 (defui InteractiveChart
   Object
   (render [this]
-    (let [state (om/get-props this)
-          _ (prn state)
-          chart-data (years-til-retirement state)]
+    (let [state (om/props this)
+          _ (prn @state)
+          chart-data (years-til-retirement @state)]
       (html 
         [:div nil
          [:div nil (map #(editable-parameter {:state state :k (first %) :v (second %)}) @state)]
