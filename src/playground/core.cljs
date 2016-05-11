@@ -2,7 +2,7 @@
   (:require
    [om.next :as om :refer-macros [defui]]
    [sablono.core :refer-macros [html]]
-   [devcards.core :refer-macros [defcard deftest]]
+   [devcards.core :refer-macros [defcard deftest om-next-root]]
    [cljs.test :refer-macros [is testing]]))
 
 (enable-console-print!)
@@ -63,7 +63,7 @@
   (fn [] 
     (prn "triggered edit")
     (swap! state update-in [:editing] (fn [ks] (conj ks k)))
-    (prn "state after edit" @state)))
+    (prn "state after edit" state)))
 
 (defn input-complete [{:keys [state k v]}]
   (fn [e] 
@@ -84,8 +84,8 @@
           {:keys [state k]} (om/props this)
           ; TODO: not sure of the value of making these computed
           ; {:keys [input-complete trigger-edit]} (om/get-computed this)
-          v (get @state k)
-          editing? (contains? (get @state :editing) k)]
+          v (get state k)
+          editing? (contains? (get state :editing) k)]
       (prn (str "key: " k " val: " v " editing: " editing?))
       (html
         (if editing? 
@@ -100,24 +100,21 @@
   Object
   (render [this]
     (let [state (om/props this)
-          _ (prn @state)
-          chart-data (years-til-retirement @state)]
+          _ (prn state)
+          chart-data (years-til-retirement state)]
       (html 
         [:div nil
-         [:div nil (map #(editable-parameter {:state state :k (first %) :v (second %)}) @state)]
+         [:div nil (map #(editable-parameter {:state state :k (first %) :v (second %)}) state)]
          [:div nil "Years til retirement: " (count chart-data)]
          [:div nil
           (column-chart {:data chart-data :width 420 :height 150})]]))))
-
-(def interactive-chart (om/factory InteractiveChart))
 
 (defn retirement-vals [m]
   (vals (select-keys m [:salary :expenses :rate-of-return])))
 
 (defcard interactive-chart
-  (fn [state _]
-    (interactive-chart state))
-  {:salary 40000 :expenses 20000 :rate-of-return 0.05 :editing #{}})
+  (om-next-root InteractiveChart
+    {:salary 40000 :expenses 20000 :rate-of-return 0.05 :editing #{}}))
 
 (defn main []
   ;; conditionally start the app based on whether the #main-app-area
