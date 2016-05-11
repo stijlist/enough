@@ -10,6 +10,8 @@
 (defcard title-card
   (html [:div [:h1 "How much is enough?"]]))
 
+(def app-state (atom {:salary 40000 :expenses 20000 :rate-of-return 0.05 :editing #{}}))
+
 (defn years-til-retirement
   [{:keys [salary expenses rate-of-return cutoff]}]
   {:pre [(every? number? [salary expenses rate-of-return])]}
@@ -62,12 +64,12 @@
 (defn trigger-edit [{:keys [state k]}]
   (fn [] 
     (prn "triggered edit")
-    (swap! state update-in [:editing] (fn [ks] (conj ks k)))
-    (prn "state after edit" state)))
+    (swap! app-state update-in [:editing] (fn [ks] (conj ks k)))
+    (prn "state after edit" app-state)))
 
 (defn input-complete [{:keys [state k v]}]
   (fn [e] 
-    (swap! state 
+    (swap! app-state 
       (fn [s] 
         (-> s
           (update-in [:editing] #(disj % k))
@@ -112,9 +114,11 @@
 (defn retirement-vals [m]
   (vals (select-keys m [:salary :expenses :rate-of-return])))
 
+(def reconciler (om/reconciler {:state app-state}))
+
 (defcard interactive-chart
   (om-next-root InteractiveChart
-    {:salary 40000 :expenses 20000 :rate-of-return 0.05 :editing #{}}))
+    reconciler))
 
 (defn main []
   ;; conditionally start the app based on whether the #main-app-area

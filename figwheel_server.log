@@ -3070,3 +3070,46 @@ notifying browser that file changed:  out/playground/core.js
 [0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
 notifying browser that file changed:  out/playground/core.js
 [32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.514 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.525 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+[31mCompiling "resources/public/js/compiled/playground_devcards.js" failed.
+[0mERROR: EOF while reading, starting at line 115 and column 1 on file /Users/bert/Dropbox/source/enough/src/playground/core.cljs, line 132, column 1
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.392 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+[31mCompiling "resources/public/js/compiled/playground_devcards.js" failed.
+[0mERROR: EOF while reading, starting at line 117 and column 1 on file /Users/bert/Dropbox/source/enough/src/playground/core.cljs, line 132, column 1
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.371 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+[31mCompiling "resources/public/js/compiled/playground_devcards.js" failed.
+[0mERROR: EOF while reading, starting at line 115 and column 1 on file /Users/bert/Dropbox/source/enough/src/playground/core.cljs, line 132, column 1
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.415 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+[31mCompiling "resources/public/js/compiled/playground_devcards.js" failed.
+[0mERROR: EOF while reading, starting at line 115 and column 1 on file /Users/bert/Dropbox/source/enough/src/playground/core.cljs, line 132, column 1
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.381 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.497 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+WARNING: Wrong number of args (4) passed to om.next/transact! at line 65 src/playground/core.cljs
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.587 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.518 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+[31mCompiling "resources/public/js/compiled/playground_devcards.js" failed.
+[0mERROR: Map literal must contain an even number of forms on file /Users/bert/Dropbox/source/enough/src/playground/core.cljs, line 117, column 41
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.368 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+[31mCompiling "resources/public/js/compiled/playground_devcards.js" failed.
+[0mERROR: Map literal must contain an even number of forms on file /Users/bert/Dropbox/source/enough/src/playground/core.cljs, line 117, column 41
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.38 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.508 seconds.[0m
+[0mCompiling "resources/public/js/compiled/playground_devcards.js" from ["src"]...
+notifying browser that file changed:  out/playground/core.js
+[32mSuccessfully compiled "resources/public/js/compiled/playground_devcards.js" in 0.536 seconds.[0m
