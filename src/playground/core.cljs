@@ -10,8 +10,6 @@
 (defcard title-card
   (html [:div [:h1 "How much is enough?"]]))
 
-(def app-state (atom {:salary 40000 :expenses 20000 :rate-of-return 0.05 :editing #{}}))
-
 (defn years-til-retirement
   [{:keys [salary expenses rate-of-return cutoff]}]
   {:pre [(every? number? [salary expenses rate-of-return])]}
@@ -61,25 +59,24 @@
     js/Number (js/Number v)
     js/String (js/String v)))
 
-(defn trigger-edit [{:keys [state k]}]
-  (fn [] 
-    (prn "triggered edit")
-    (swap! app-state update-in [:editing] (fn [ks] (conj ks k)))
-    (prn "state after edit" app-state)))
-
 (defn input-complete [{:keys [state k v]}]
   (fn [e] 
-    (swap! app-state 
+    (swap! state 
       (fn [s] 
         (-> s
           (update-in [:editing] #(disj % k))
           (update-in [k] 
             #(coerce-to-type-of v 
               (.. e -target -parentElement -firstElementChild -value))))))))
- 
 
-;; TODO: re-renders aren't happening; why?
+;; TODO: currently this isn't sufficient - we might need to use the ident
+;; to decide which parameter we're operating on.
+;; right now the initial props include {:k parameter-name}, but the query
+;; that re-renders does not (and cannot)
 (defui EditableParameter
+  static om/IQuery
+  (query [this]
+    [:editing :salary :expenses :rate-of-return])
   Object
   (render [this]
     (let [_ (prn "The props: " (om/props this))
@@ -94,7 +91,7 @@
           [:div nil ;; TODO: use forms so we get keyevent handling for free
            [:input {:type "text"}]
            [:button {:onClick (input-complete {:state state :k k :v v})} "Done"]]
-          [:div nil (str v) [:button {:onClick (trigger-edit {:state state :k k})} "Edit"]])))))
+          [:div nil (str v) [:button {:onClick #(om/transact! this '[(editing {:target-key k})])} "Edit"]])))))
 
 (def editable-parameter (om/factory EditableParameter))
 
@@ -106,6 +103,7 @@
           chart-data (years-til-retirement state)]
       (html 
         [:div nil
+         [:div nil "Test counter: " (:count state)]
          [:div nil (map #(editable-parameter {:state state :k (first %) :v (second %)}) state)]
          [:div nil "Years til retirement: " (count chart-data)]
          [:div nil
@@ -114,11 +112,28 @@
 (defn retirement-vals [m]
   (vals (select-keys m [:salary :expenses :rate-of-return])))
 
-(def reconciler (om/reconciler {:state app-state}))
+(defn read [env key params] 
+  (let [state (:state env)]
+    {:value (get @state key)}))
 
-(defcard interactive-chart
-  (om-next-root InteractiveChart
-    reconciler))
+(defmulti mutate (fn [_ k _] k))
+(defmethod mutate 'increment
+  [{:keys [state] :as env} key params]
+  {:value {:keys [:count]} 
+   :action (swap! state update-in [:count] inc)})
+
+(defmethod mutate 'editing
+  [{:keys [state] :as env} key {:keys [target-key]}]
+  {:value {:keys [:editing target-key]}
+   :action #(swap! state update-in [:editing] (fn [ks] (conj ks target-key)))})
+
+(def app-state (atom {:count 0 :salary 40000 :expenses 20000 :rate-of-return 0.05 :editing #{}}))
+
+(def parser (om/parser {:read read :mutate mutate}))
+
+(def reconciler (om/reconciler {:state app-state :parser parser}))
+
+(defcard interactive-chart (om-next-root InteractiveChart reconciler))
 
 (defn main []
   ;; conditionally start the app based on whether the #main-app-area
