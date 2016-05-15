@@ -69,14 +69,13 @@
             #(coerce-to-type-of v 
               (.. e -target -parentElement -firstElementChild -value))))))))
 
-;; TODO: currently this isn't sufficient - we might need to use the ident
-;; to decide which parameter we're operating on.
-;; right now the initial props include {:k parameter-name}, but the query
-;; that re-renders does not (and cannot)
 (defui EditableParameter
+  static om/Ident
+  (ident [this {:keys [name]}]
+    [:parameter/by-name name])
   static om/IQuery
   (query [this]
-    [:parameter (select-keys (om/props this) [:name])])
+    `[(:parameter ~(select-keys (om/props this) [:name]))])
   Object
   (render [this]
     (let [{:keys [state name value]} (om/props this)
@@ -97,7 +96,6 @@
           chart-data (years-til-retirement (:parameters state))]
       (html 
         [:div nil
-         [:div nil "Test counter: " (:count state)]
          [:div nil 
           (map editable-parameter (:parameters state))]
          [:div nil "Years til retirement: " (count chart-data)]
@@ -107,7 +105,11 @@
 (defmulti read om/dispatch)
 (defmethod read :parameter
   [{:keys [state] :as env} key {:keys [name]}]
-  {:value (first (filter #(= name (:name %)) (get @state :parameters)))})
+  {:value 
+   (assoc 
+     (first (filter #(= name (:name %)) (get @state :parameters)))
+     :editing?
+     (contains? (:editing @state) name))})
 
 (defmulti mutate (fn [_ k _] k))
 (defmethod mutate 'increment
@@ -126,7 +128,7 @@
     :parameters [{:name :salary :value 40000}
                  {:name :expenses :value 20000}
                  {:name :rate-of-return :value 0.05}]
-    :editing #{}}))
+    :editing #{:salary}}))
 
 (def parser (om/parser {:read read :mutate mutate}))
 
