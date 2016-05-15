@@ -76,22 +76,17 @@
 (defui EditableParameter
   static om/IQuery
   (query [this]
-    [:editing :salary :expenses :rate-of-return])
+    [:parameter (select-keys (om/props this) [:name])])
   Object
   (render [this]
-    (let [_ (prn "The props: " (om/props this))
-          {:keys [state k]} (om/props this)
-          ; TODO: not sure of the value of making these computed
-          ; {:keys [input-complete trigger-edit]} (om/get-computed this)
-          v (get state k)
-          editing? (contains? (get state :editing) k)]
-      (prn (str "key: " k " val: " v " editing: " editing?))
+    (let [{:keys [state name value]} (om/props this)
+          editing? (contains? (get state :editing) name)]
       (html
         (if editing? 
           [:div nil ;; TODO: use forms so we get keyevent handling for free
            [:input {:type "text"}]
-           [:button {:onClick (input-complete {:state state :k k :v v})} "Done"]]
-          [:div nil (str v) [:button {:onClick #(om/transact! this '[(editing {:target-key k})])} "Edit"]])))))
+           [:button {:onClick #(prn "Done clicked")} "Done"]]
+          [:div nil (str value) [:button {:onClick #(om/transact! this '[(editing {:target-key k})])} "Edit"]])))))
 
 (def editable-parameter (om/factory EditableParameter))
 
@@ -99,22 +94,20 @@
   Object
   (render [this]
     (let [state (om/props this)
-          _ (prn state)
-          chart-data (years-til-retirement state)]
+          chart-data (years-til-retirement (:parameters state))]
       (html 
         [:div nil
          [:div nil "Test counter: " (:count state)]
-         [:div nil (map #(editable-parameter {:state state :k (first %) :v (second %)}) state)]
+         [:div nil 
+          (map editable-parameter (:parameters state))]
          [:div nil "Years til retirement: " (count chart-data)]
          [:div nil
           (column-chart {:data chart-data :width 420 :height 150})]]))))
 
-(defn retirement-vals [m]
-  (vals (select-keys m [:salary :expenses :rate-of-return])))
-
-(defn read [env key params] 
-  (let [state (:state env)]
-    {:value (get @state key)}))
+(defmulti read om/dispatch)
+(defmethod read :parameter
+  [{:keys [state] :as env} key {:keys [name]}]
+  {:value (first (filter #(= name (:name %)) (get @state :parameters)))})
 
 (defmulti mutate (fn [_ k _] k))
 (defmethod mutate 'increment
@@ -127,13 +120,21 @@
   {:value {:keys [:editing target-key]}
    :action #(swap! state update-in [:editing] (fn [ks] (conj ks target-key)))})
 
-(def app-state (atom {:count 0 :salary 40000 :expenses 20000 :rate-of-return 0.05 :editing #{}}))
+(def app-state 
+  (atom
+   {:count 0
+    :parameters [{:name :salary :value 40000}
+                 {:name :expenses :value 20000}
+                 {:name :rate-of-return :value 0.05}]
+    :editing #{}}))
 
 (def parser (om/parser {:read read :mutate mutate}))
 
 (def reconciler (om/reconciler {:state app-state :parser parser}))
 
-(defcard interactive-chart (om-next-root InteractiveChart reconciler))
+(prn (parser {:state app-state} '[(:parameter {:name :salary})]))
+
+#_(defcard interactive-chart (om-next-root InteractiveChart reconciler))
 
 (defn main []
   ;; conditionally start the app based on whether the #main-app-area
