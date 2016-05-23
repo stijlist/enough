@@ -80,7 +80,7 @@
     [:parameter/by-name name])
   static om/IQuery
   (query [this]
-    `[(:parameter ~(select-keys (om/props this) [:name]))])
+    `[(:parameters ~(select-keys (om/props this) [:name]))])
   Object
   (render [this]
     (let [{:keys [name value editing?]} (om/props this)]
@@ -130,7 +130,7 @@
 
 (def reconciler (om/reconciler {:state app-state :parser parser}))
 
-(prn (parser {:state app-state} '[(:parameter {:name :salary})]))
+(prn (parser {:state app-state} '[(:parameters {:name :salary})]))
 #_(prn (om/transact! reconciler '[(editing {:target-key :salary})]))
 #_(prn (parser {:state app-state} '[(:parameters {:name :salary})]))
 (prn (om/transact! reconciler '[(parameter/update {:name :salary :value 50000})]))
