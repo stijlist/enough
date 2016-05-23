@@ -78,16 +78,60 @@
     `[(:parameter ~(select-keys (om/props this) [:name]))])
   Object
   (render [this]
-    (let [{:keys [state name value]} (om/props this)
-          editing? (contains? (get state :editing) name)]
+    (let [{:keys [name value editing?]} (om/props this)]
       (html
         (if editing? 
           [:div nil ;; TODO: use forms so we get keyevent handling for free
-           [:input {:type "text"}]
-           [:button {:onClick #(prn "Done clicked")} "Done"]]
-          [:div nil (str value) [:button {:onClick #(om/transact! this '[(editing {:target-key k})])} "Edit"]])))))
+           [:input {:type "text"}]]
+          [:div nil (str value) [:button {:onClick #(om/transact! this '[(editing {:target-key name})])} "Edit"]])))))
 
 (def editable-parameter (om/factory EditableParameter))
+(defmulti mutate om/dispatch)
+(defmulti read om/dispatch)
+
+(defmethod read :parameters
+  [{:keys [state] :as env} key {:keys [name]}]
+  {:value 
+   (assoc 
+     (first (filter #(= name (:name %)) (get @state :parameters)))
+     :editing?
+     (contains? (:editing @state) name))})
+
+(defmethod mutate 'editing
+  [{:keys [state] :as env} key {:keys [target-key]}]
+  {:value {:keys [:editing target-key]}
+   :action #(swap! state update-in [:editing] (fn [ks] (conj ks target-key)))})
+
+;; TODO: updating parameters by ident (indexed by :name) isn't working - 
+;;       figuring that out would make this a lot more elegant.
+(defmethod mutate 'parameter/update
+  [{:keys [state]} key {:keys [name value] :as new-param}]
+  {:action
+   #(swap! state update-in [:parameters] 
+     (fn [old-params] 
+      (map 
+        (fn [param] (if (= (:name param) name) new-param param)) 
+        old-params)))
+   :value {:keys [:parameters]}})
+
+(def app-state 
+  (atom
+   {:parameters [{:name :salary :value 40000}
+                 {:name :expenses :value 20000}
+                 {:name :rate-of-return :value 0.05}]
+    :editing #{}}))
+
+(def parser (om/parser {:read read :mutate mutate}))
+
+(def reconciler (om/reconciler {:state app-state :parser parser}))
+
+(prn (parser {:state app-state} '[(:parameter {:name :salary})]))
+#_(prn (om/transact! reconciler '[(editing {:target-key :salary})]))
+#_(prn (parser {:state app-state} '[(:parameters {:name :salary})]))
+(prn (om/transact! reconciler '[(parameter/update {:name :salary :value 50000})]))
+(prn (parser {:state app-state} '[(:parameters {:name :salary})]))
+(prn @app-state)
+
 
 (defui InteractiveChart
   Object
@@ -101,40 +145,6 @@
          [:div nil "Years til retirement: " (count chart-data)]
          [:div nil
           (column-chart {:data chart-data :width 420 :height 150})]]))))
-
-(defmulti read om/dispatch)
-(defmethod read :parameter
-  [{:keys [state] :as env} key {:keys [name]}]
-  {:value 
-   (assoc 
-     (first (filter #(= name (:name %)) (get @state :parameters)))
-     :editing?
-     (contains? (:editing @state) name))})
-
-(defmulti mutate (fn [_ k _] k))
-(defmethod mutate 'increment
-  [{:keys [state] :as env} key params]
-  {:value {:keys [:count]} 
-   :action (swap! state update-in [:count] inc)})
-
-(defmethod mutate 'editing
-  [{:keys [state] :as env} key {:keys [target-key]}]
-  {:value {:keys [:editing target-key]}
-   :action #(swap! state update-in [:editing] (fn [ks] (conj ks target-key)))})
-
-(def app-state 
-  (atom
-   {:count 0
-    :parameters [{:name :salary :value 40000}
-                 {:name :expenses :value 20000}
-                 {:name :rate-of-return :value 0.05}]
-    :editing #{:salary}}))
-
-(def parser (om/parser {:read read :mutate mutate}))
-
-(def reconciler (om/reconciler {:state app-state :parser parser}))
-
-(prn (parser {:state app-state} '[(:parameter {:name :salary})]))
 
 #_(defcard interactive-chart (om-next-root InteractiveChart reconciler))
 
