@@ -12,7 +12,9 @@
 
 (defn years-til-retirement
   [{:keys [salary expenses rate-of-return cutoff]}]
-  {:pre [(every? number? [salary expenses rate-of-return])]}
+  {:pre [(number? salary) 
+         (number? expenses) 
+         (number? rate-of-return)]}
   (loop [years [0]]
     (let [balance (peek years)
           growth (* balance rate-of-return)
@@ -68,6 +70,9 @@
           (update-in [k] 
             #(coerce-to-type-of v 
               (.. e -target -parentElement -firstElementChild -value))))))))
+
+(defn indexed-parameters [params]
+  (into {} (map (juxt :name :value) params)))
 
 (defui EditableParameter
   static om/Ident
@@ -132,12 +137,11 @@
 (prn (parser {:state app-state} '[(:parameters {:name :salary})]))
 (prn @app-state)
 
-
 (defui InteractiveChart
   Object
   (render [this]
     (let [state (om/props this)
-          chart-data (years-til-retirement (:parameters state))]
+          chart-data (years-til-retirement (indexed-parameters (:parameters state)))]
       (html 
         [:div nil
          [:div nil 
@@ -146,7 +150,7 @@
          [:div nil
           (column-chart {:data chart-data :width 420 :height 150})]]))))
 
-#_(defcard interactive-chart (om-next-root InteractiveChart reconciler))
+(defcard interactive-chart (om-next-root InteractiveChart reconciler))
 
 (defn main []
   ;; conditionally start the app based on whether the #main-app-area
