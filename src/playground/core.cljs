@@ -84,6 +84,7 @@
   Object
   (render [this]
     (let [{:keys [name value editing?]} (om/props this)]
+      (prn "editable param props" (om/props this))
       (html
         (if editing? 
           [:div nil ;; TODO: use forms so we get keyevent handling for free
@@ -95,12 +96,20 @@
 (defmulti read om/dispatch)
 
 (defmethod read :parameters
-  [{:keys [state] :as env} key {:keys [name]}]
+  [{:keys [state] :as env} key query-params]
   {:value 
-   (assoc 
-     (first (filter #(= name (:name %)) (get @state :parameters)))
-     :editing?
-     (contains? (:editing @state) name))})
+   (let [being-edited? #(contains? (:editing @state) (:name %))]
+     (if-let [{:keys [name]} query-params]
+       (assoc 
+         (first (filter #(= name (:name %)) (get @state :parameters)))
+         :editing? (being-edited? query-params))
+       (map 
+         (fn [editable-params] (assoc editable-params :editing? (being-edited? editable-params))) 
+         (:parameters @state))))})
+
+(defmethod read :editing
+  [{:keys [state] :as env} key params]
+  (:editing @state))
 
 (defmethod mutate 'editing
   [{:keys [state] :as env} key {:keys [target-key]}]
@@ -127,17 +136,22 @@
     :editing #{}}))
 
 (def parser (om/parser {:read read :mutate mutate}))
-
 (def reconciler (om/reconciler {:state app-state :parser parser}))
 
-(prn (parser {:state app-state} '[(:parameters {:name :salary})]))
+#_(prn (parser {:state app-state} '[(:parameters {:name :salary})]))
 #_(prn (om/transact! reconciler '[(editing {:target-key :salary})]))
 #_(prn (parser {:state app-state} '[(:parameters {:name :salary})]))
-(prn (om/transact! reconciler '[(parameter/update {:name :salary :value 50000})]))
-(prn (parser {:state app-state} '[(:parameters {:name :salary})]))
-(prn @app-state)
+#_(prn (om/transact! reconciler '[(parameter/update {:name :salary :value 50000})]))
+#_(prn (parser {:state app-state} '[(:parameters {:name :salary})]))
+#_(prn @app-state)
+(prn "some stuff" (parser {:state app-state} '[:parameters]))
 
 (defui InteractiveChart
+  static om/IQuery
+  (query [this]
+    ;; join the editing subquery with the parameters subquery somehow
+    ;; [{:parameters (map (partial om/get-query EditableParameter) } {:editing}]
+    [:parameters])
   Object
   (render [this]
     (let [state (om/props this)
