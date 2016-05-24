@@ -75,21 +75,17 @@
   (into {} (map (juxt :name :value) params)))
 
 (defui EditableParameter
-  static om/Ident
-  (ident [this {:keys [name]}]
-    [:parameter/by-name name])
   static om/IQuery
   (query [this]
     `[(:parameters ~(select-keys (om/props this) [:name]))])
   Object
   (render [this]
     (let [{:keys [name value editing?]} (om/props this)]
-      (prn "editable param props" (om/props this))
       (html
         (if editing? 
           [:div nil ;; TODO: use forms so we get keyevent handling for free
            [:input {:type "text"}]]
-          [:div nil (str value) [:button {:onClick #(om/transact! this '[(editing {:target-key name})])} "Edit"]])))))
+          [:div nil (str value) [:button {:onClick #(om/transact! this `[(editing {:target-key ~name})])} "Edit"]])))))
 
 (def editable-parameter (om/factory EditableParameter))
 (defmulti mutate om/dispatch)
@@ -114,7 +110,8 @@
 (defmethod mutate 'editing
   [{:keys [state] :as env} key {:keys [target-key]}]
   {:value {:keys [:editing target-key]}
-   :action #(swap! state update-in [:editing] (fn [ks] (conj ks target-key)))})
+   :action 
+   (fn [_] (swap! state update-in [:editing] (fn [ks] (conj ks target-key))))})
 
 ;; TODO: updating parameters by ident (indexed by :name) isn't working - 
 ;;       figuring that out would make this a lot more elegant.
@@ -164,7 +161,26 @@
          [:div nil
           (column-chart {:data chart-data :width 420 :height 150})]]))))
 
-(defcard interactive-chart (om-next-root InteractiveChart reconciler))
+(defui Something
+  static om/IQuery
+  (query [this]
+  [:parameters]
+  )
+  Object
+  (render [this]
+    (html [:div nil "Hello" (.toString (om/props this))])
+  ))
+
+(defcard editable-param 
+  (om-next-root EditableParameter 
+    (om/reconciler 
+      {:state 
+       (atom 
+         {:parameters [{:name :something :value 1}]})
+       :parser
+       (om/parser {:read read :mutate mutate})})))
+
+#_(defcard interactive-chart (om-next-root InteractiveChart reconciler))
 
 (defn main []
   ;; conditionally start the app based on whether the #main-app-area
