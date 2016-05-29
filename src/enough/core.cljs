@@ -39,18 +39,20 @@
     [:name :value :editing?])
   Object
   (render [this]
-    (let [{:keys [name value editing?]} (om/props this)]
+    (let [{:keys [name value editing?]} (om/props this)
+          {:keys [set-editing update] :as computed} (om/get-computed this)]
      (prn "re-render Parameter")
+     (prn "updatefn" computed)
      (html 
        [:div nil 
         [:button 
-         {:onClick #(om/transact! this '[(parameters/update {:name "Salary" :value 1 :editing? true})])}
+         {:onClick set-editing}
          "Edit"]
         [:div name] 
         (if editing? 
           [:div 
            [:input {:type "text"}]
-           [:button {:onClick (fn [e] (om/transact! this '[(parameters/update {:name "Salary" :value 5 :editing? false})]))}]] 
+           [:button {:onClick update}]] 
           [:div value])]))))
 
 (def parameter (om/factory Parameter))
@@ -61,7 +63,10 @@
     '[:parameters])
   Object
   (render [this]
-    (html 
-      [:div nil (map parameter (:parameters (om/props this)))])))
+    (let [computed 
+          {:set-editing #(om/transact! this '[(parameters/update {:name "Salary" :value 1 :editing? true})])
+           :update #(om/transact! this '[(parameters/update {:name "Salary" :value 5 :editing? false})])}]
+      (html 
+        [:div nil (map #(parameter (om/computed % computed)) (:parameters (om/props this)))]))))
 
 (om/add-root! reconciler Root (dom/getElement "app"))
