@@ -5,6 +5,8 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/clojurescript "1.8.51"]
-                 #_[sablono "0.5.3"]
+                 [sablono "0.7.1"]
+                 [cljsjs/react "15.1.0-0"]
+                 [cljsjs/react-dom "15.1.0-0"]
                  [org.omcljs/om "1.0.0-alpha36"]
                  [figwheel-sidecar "0.5.0-SNAPSHOT" :scope "test"]])
