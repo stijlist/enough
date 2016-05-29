@@ -4,7 +4,6 @@
    [om.next :as om :refer-macros [defui]]
    [sablono.core :refer-macros [html]]))
 
-(defn s-atom [data] {:state (atom data)})
 (enable-console-print!)
 (defmulti read om/dispatch)
 (defmulti mutate om/dispatch)
@@ -28,14 +27,8 @@
 (def parser (om/parser {:read read :mutate mutate}))
 (def reconciler (om/reconciler {:state init-data :parser parser}))
 
-(prn (parser (s-atom init-data) '[:parameters]))
-(prn (parser (s-atom init-data) '[(parameters/update {:name "Salary" :value 2 :editing? false})]))
-#_(prn (om/transact! reconciler '[(editing {:target-key :salary})]))
-#_(prn (parser {:state app-state} '[(:parameters {:name :salary})]))
-#_(prn (om/transact! reconciler '[(parameter/update {:name :salary :value 50000})]))
-#_(prn (parser {:state app-state} '[(:parameters {:name :salary})]))
-#_(prn @app-state)
-#_(prn "reading parameters" (parser {:state app-state} '[:parameters]))
+(prn (parser {:state (atom init-data)} '[:parameters]))
+(prn (parser {:state (atom init-data)} '[(parameters/update {:name "Salary" :value 2 :editing? false})]))
 
 (defui Root
   static om/IQuery
@@ -43,5 +36,10 @@
     '[:parameters])
   Object
   (render [this]
-    (html [:div nil (.toString (om/props this)) [:button {:onClick #(om/transact! this '[(parameters/update {:name "Salary" :value 2 :editing? false})])} "Edit"]])))
+    (html 
+      [:div nil (.toString (om/props this)) 
+       [:button 
+        {:onClick #(om/transact! this '[(parameters/update {:name "Salary" :value 2 :editing? false})])}
+        "Edit"]])))
+
 (om/add-root! reconciler Root (dom/getElement "app"))
