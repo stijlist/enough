@@ -40,6 +40,7 @@
   Object
   (render [this]
     (let [{:keys [name value editing?]} (om/props this)]
+     (prn "re-render Parameter")
      (html 
        [:div nil 
         [:button 
@@ -47,10 +48,9 @@
          "Edit"]
         [:div name] 
         (if editing? 
-          [:form 
-           {:onSubmit (fn [e] (.preventDefault e) (om/transact! this '[(parameters/update {:name "Salary" :value 5 :editing? false})]))}
+          [:div 
            [:input {:type "text"}]
-           [:input {:type "submit"}]] 
+           [:button {:onClick (fn [e] (om/transact! this '[(parameters/update {:name "Salary" :value 5 :editing? false})]))}]] 
           [:div value])]))))
 
 (def parameter (om/factory Parameter))
