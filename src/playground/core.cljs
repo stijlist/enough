@@ -77,10 +77,12 @@
 (defui EditableParameter
   static om/IQuery
   (query [this]
-    `[(:parameters ~(select-keys (om/props this) [:name]))])
+    [:parameters]
+    #_`[(:parameters ~(select-keys (om/props this) [:name]))])
   Object
   (render [this]
     (let [{:keys [name value editing?]} (om/props this)]
+      (prn "props " (om/props this))
       (html
         (if editing? 
           [:div nil ;; TODO: use forms so we get keyevent handling for free
@@ -160,16 +162,6 @@
          [:div nil "Years til retirement: " (count chart-data)]
          [:div nil
           (column-chart {:data chart-data :width 420 :height 150})]]))))
-
-(defui Something
-  static om/IQuery
-  (query [this]
-  [:parameters]
-  )
-  Object
-  (render [this]
-    (html [:div nil "Hello" (.toString (om/props this))])
-  ))
 
 (defcard editable-param 
   (om-next-root EditableParameter 
