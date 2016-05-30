@@ -39,23 +39,21 @@
     [:name :value :editing?])
   Object
   (render [this]
-    (let [{:keys [name value editing?]} (om/props this)
-          {:keys [set-editing update] :as computed} (om/get-computed this)]
+    (let [{:keys [name value editing?]} (om/props this)]
      (prn "re-render Parameter")
-     (prn "updatefn" computed)
      (html 
        [:div nil 
         [:button 
-         {:onClick set-editing}
+         {:onClick #(om/transact! this '[(parameters/update {:name "Salary" :value 1 :editing? true})])}
          "Edit"]
         [:div name] 
         (if editing? 
           [:div 
            [:input {:type "text"}]
-           [:button {:onClick update}]] 
+           [:button {:onClick #(om/transact! this '[(parameters/update {:name "Salary" :value 5 :editing? false})])}]] 
           [:div value])]))))
 
-(def parameter (om/factory Parameter))
+(def parameter (om/factory Parameter {:keyfn :name}))
 
 (defui Root
   static om/IQuery
@@ -63,9 +61,7 @@
     '[:parameters])
   Object
   (render [this]
-    (let [computed 
-          {:set-editing #(om/transact! this '[(parameters/update {:name "Salary" :value 1 :editing? true})])
-           :update #(om/transact! this '[(parameters/update {:name "Salary" :value 5 :editing? false})])}]
+    (let [computed {}]
       (html 
         [:div nil (map #(parameter (om/computed % computed)) (:parameters (om/props this)))]))))
 
