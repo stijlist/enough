@@ -13,6 +13,7 @@
 
 (defn get-normalized-toplevel-key [state key]
   (let [s @state]
+    (prn "state in root read" s)
     (into [] (map (partial get-in s) (get s key)))))
 
 (defmethod read :default
@@ -20,15 +21,15 @@
   {:value (get-normalized-toplevel-key state key)})
 (defmethod mutate 'parameters/update
   [{:keys [state]} key {:keys [name] :as params}]
+  (prn "params to mutation" params)
   {:action
    (fn []
-     (swap! state update-in [:parameters/by-name name] (fn [old] (merge old params))))})
+     (prn "what does get-in return" (get-in @state [:parameters/by-name name]))
+     (swap! state update-in [:parameters/by-name name] 
+       (fn [old] (prn "old parameters" old "new parameters" params) params)))})
 
 (def parser (om/parser {:read read :mutate mutate}))
 (def reconciler (om/reconciler {:state init-data :parser parser}))
-
-(prn (parser {:state (atom init-data)} '[:parameters]))
-(prn (parser {:state (atom init-data)} '[(parameters/update {:name "Salary" :value 2 :editing? false})]))
 
 (defui Parameter
   static om/Ident
@@ -39,21 +40,15 @@
     [:name :value :editing?])
   Object
   (render [this]
-    (let [{:keys [name value editing?]} (om/props this)]
-     (prn "re-render Parameter")
+    (let [{:keys [name value editing?] :as props} (om/props this)]
+     (prn "re-render Parameter with props " props)
      (html 
        [:div nil 
-        [:button 
-         {:onClick #(om/transact! this '[(parameters/update {:name "Salary" :value 1 :editing? true})])}
-         "Edit"]
-        [:div name] 
-        (if editing? 
-          [:div 
-           [:input {:type "text"}]
-           [:button {:onClick #(om/transact! this '[(parameters/update {:name "Salary" :value 5 :editing? false})])}]] 
-          [:div value])]))))
+        (str (om/props this))
+        [:button {:onClick #(om/transact! this '[(parameters/update {:name "Salary" :value 1 :editing? false})])} "Set value to 1"]
+        [:button {:onClick #(om/transact! this '[(parameters/update {:name "Salary" :value 2 :editing? false})])} "Set value to 2"]]))))
 
-(def parameter (om/factory Parameter {:keyfn :name}))
+(def parameter (om/factory Parameter))
 
 (defui Root
   static om/IQuery
@@ -61,8 +56,7 @@
     '[:parameters])
   Object
   (render [this]
-    (let [computed {}]
-      (html 
-        [:div nil (map #(parameter (om/computed % computed)) (:parameters (om/props this)))]))))
+    (html 
+      [:div nil (map parameter (:parameters (om/props this)))])))
 
 (om/add-root! reconciler Root (dom/getElement "app"))
