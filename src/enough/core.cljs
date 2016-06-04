@@ -49,12 +49,17 @@
         (str (om/props this))
         [:button {:onClick #(om/transact! this '[(parameters/update {:name "Salary" :value 2 :editing? false})])} "Set value to 1"]]))))
 
-(def parameter (om/factory Parameter))
+(def parameter (om/factory Parameter {:keyfn :name}))
 
 (defui Root
   static om/IQuery
   (query [this]
-    '[{:parameters [:name :value :editing?]}])
+    (let [subquery (om/get-query Parameter)]
+      ;; mysteriously, substituting om/get-query Parameter here doesn't yield
+      ;; the same result, even though the subqueries are equal
+      ;; (prn "subqueries equal" (= subquery '[:name :value :editing?]))
+      ;; `[{:parameters ~subquery}]))
+      `[{:parameters [:name :value :editing?]}]))
   Object
   (render [this]
     (html 
