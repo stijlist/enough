@@ -13,20 +13,23 @@
 
 (defn get-normalized-toplevel-key [state key]
   (let [s @state]
-    (prn "state in root read" s)
-    (into [] (map (partial get-in s) (get s key)))))
+    (comment
+      (prn "state in root read" s)
+      (prn "deref state" s)
+      (prn "key is " key)
+      (prn "get s key" (get s key)))
+    (into [] (map #(get-in s %) (get s key)))))
 
-(defmethod read :default
+(defmethod read :parameters
   [{:keys [state]} key params]
+  (prn "calling read with key:" key)
   {:value (get-normalized-toplevel-key state key)})
 (defmethod mutate 'parameters/update
   [{:keys [state]} key {:keys [name] :as params}]
   (prn "params to mutation" params)
   {:action
    (fn []
-     (prn "what does get-in return" (get-in @state [:parameters/by-name name]))
-     (swap! state update-in [:parameters/by-name name] 
-       (fn [old] (prn "old parameters" old "new parameters" params) params)))})
+     (swap! state update-in [:parameters/by-name name] (constantly params)))})
 
 (def parser (om/parser {:read read :mutate mutate}))
 (def reconciler (om/reconciler {:state init-data :parser parser}))
@@ -41,22 +44,21 @@
   Object
   (render [this]
     (let [{:keys [name value editing?] :as props} (om/props this)]
-     (prn "re-render Parameter with props " props)
      (html 
        [:div nil 
         (str (om/props this))
-        [:button {:onClick #(om/transact! this '[(parameters/update {:name "Salary" :value 1 :editing? false})])} "Set value to 1"]
-        [:button {:onClick #(om/transact! this '[(parameters/update {:name "Salary" :value 2 :editing? false})])} "Set value to 2"]]))))
+        [:button {:onClick #(om/transact! this '[(parameters/update {:name "Salary" :value 2 :editing? false})])} "Set value to 1"]]))))
 
 (def parameter (om/factory Parameter))
 
 (defui Root
   static om/IQuery
   (query [this]
-    '[:parameters])
+    '[{:parameters [:name :value :editing?]}])
   Object
   (render [this]
     (html 
       [:div nil (map parameter (:parameters (om/props this)))])))
 
 (om/add-root! reconciler Root (dom/getElement "app"))
+(prn (om/get-query Parameter))
