@@ -57,6 +57,11 @@
     (let [subquery (om/get-query Parameter)]
       ;; mysteriously, substituting om/get-query Parameter here doesn't yield
       ;; the same result, even though the subqueries are equal
+      ;; instead, om/props of the Parameter starts returning the ident instead
+      ;; one explanation would be that the subquery is changing, but it's not -
+      ;; (prn "subqueries equal" keeps printing "true"
+      ;; perhaps I could assert that the subqueries were equal to make sure
+      ;; I'm not just misreading the test log
       ;; (prn "subqueries equal" (= subquery '[:name :value :editing?]))
       ;; `[{:parameters ~subquery}]))
       `[{:parameters [:name :value :editing?]}]))
