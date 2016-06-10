@@ -27,3 +27,17 @@
 (defn thousands->k [n]
   (str (int (/ n 1000)) "k"))
 
+(defn bar [data {:keys [width height]}]
+  (let [y-scale (linear-scale [0 (apply max data)] [0 height])
+        bar-width (/ width (count data))]
+    (html
+      [:svg {:class "chart" :height height :width width}
+       (map-indexed 
+         (fn [i d]
+           [:g {:transform (translate (* i bar-width) 0)}
+            [:rect 
+             {:y (- height (y-scale d)) :height (y-scale d) :width (dec bar-width)}]
+            [:text 
+             {:x (+ 7 (/ bar-width 2)) :y (- height 3) :dy "0.15em"} 
+             (thousands->k d)]])
+         data)])))

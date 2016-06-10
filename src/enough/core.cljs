@@ -38,27 +38,17 @@
    (fn []
      (swap! state update-in [:parameters/by-name name] (fn [old] (merge old params))))})
 
+(defn rename-keys [m keymap]
+  (into {} (map (fn [[k v]] [(get keymap k) v])) m))
+
 (defui Chart
   Object
   (render [this]
     (prn "re-render Chart" (-> this om/props))
-    (let [{salary "Salary" expenses "Expenses" rate-of-return "Rate of return"} (om/props this)
-          data (chart/years-til-retirement {:salary salary :expenses expenses :rate-of-return rate-of-return}) 
-          height 200
-          width 200
-          y-scale (chart/linear-scale [0 (apply max data)] [0 height])
-          bar-width (/ width (count data))]
-      (html
-        [:svg {:class "chart" :height height :width width}
-         (map-indexed 
-           (fn [i d]
-             [:g {:transform (chart/translate (* i bar-width) 0)}
-              [:rect 
-               {:y (- height (y-scale d)) :height (y-scale d) :width (dec bar-width)}]
-              [:text 
-               {:x (+ 7 (/ bar-width 2)) :y (- height 3) :dy "0.15em"} 
-               (chart/thousands->k d)]])
-           data)]))))
+    (-> (om/props this) 
+      (rename-keys {"Salary" :salary "Expenses" :expenses "Rate of return" :rate-of-return})
+      (chart/years-til-retirement)
+      (chart/bar {:width 200 :height 200}))))
       
 (defn coerce-to-type-of [orig v]
   (condp = (type orig)
