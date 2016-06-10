@@ -12,8 +12,8 @@
 
 (def init-data
   {:parameters 
-   [{:name "Salary" :value 10000 :editing? false}
-    {:name "Expenses" :value 5000 :editing? false}
+   [{:name "Salary" :value 100000 :editing? false}
+    {:name "Expenses" :value 80000 :editing? false}
     {:name "Rate of return" :value 0.1 :editing? false}]})
 
 (defmulti read om/dispatch)

@@ -28,17 +28,18 @@
   (str (int (/ n 1000)) "k"))
 
 (defn bar [data {:keys [width height]}]
-  (let [y-scale (linear-scale [0 500000] [0 500])
+  (let [y-scale (linear-scale [0 1000000] [0 1000])
+        true-height 1000
         bar-width 40]
     (html
-      [:div {:style {:overflow "scroll" :height (str height "px") :width (str width "px")}}
-        [:svg {:class "chart" :height (str height "px") :width (str (* bar-width (count data)) "px")}
+      [:div {:style {:overflow "scroll" :overflow-y "scroll" :height (str height "px") :width (str width "px")}}
+        [:svg {:class "chart" :height (str true-height "px") :width (str (* bar-width (count data)) "px")}
          (map-indexed 
            (fn [i d]
              [:g {:transform (translate (* i bar-width) 0)}
               [:rect 
-               {:y (- height (y-scale d)) :height (y-scale d) :width (dec bar-width)}]
+               {:y (- true-height (y-scale d)) :height (y-scale d) :width (dec bar-width)}]
               [:text 
-               {:x (+ 7 (/ bar-width 2)) :y (- height 3) :dy "0.15em"} 
+               {:x (+ 7 (/ bar-width 2)) :y (- true-height 3) :dy "0.15em"} 
                (thousands->k d)]])
            data)]])))
