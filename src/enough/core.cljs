@@ -10,8 +10,8 @@
 (enable-console-print!)
 (def init-data
   {:parameters 
-   [{:name "Salary" :value 10 :editing? false}
-    {:name "Expenses" :value 5 :editing? false}
+   [{:name "Salary" :value 10000 :editing? false}
+    {:name "Expenses" :value 5000 :editing? false}
     {:name "Rate of return" :value 0.1 :editing? false}]})
 
 (defmulti read om/dispatch)
@@ -46,6 +46,7 @@
     {:parameters '[:name :value]})
   Object
   (render [this]
+    (prn "re-render Chart" (-> this om/props))
     (let [{salary "Salary" expenses "Expenses" rate-of-return "Rate of return"} (om/props this)
           data (chart/years-til-retirement {:salary salary :expenses expenses :rate-of-return rate-of-return}) 
           height 200
@@ -94,7 +95,12 @@
               (fn [e]
                 (let [numeric-value (string/parseInt value)]
                   (when-not (js/isNaN numeric-value)
-                    (om/transact! this `[(parameters/update {:name ~name :value ~numeric-value :editing? false}) :chart-values]))))}
+                    (om/transact! this 
+                      `[(parameters/update 
+                          {:name ~name 
+                           :value ~numeric-value 
+                           :editing? false}) 
+                        :chart-values]))))}
               "Save"]])]))))
 
 (def parameter (om/factory Parameter {:keyfn :name}))
