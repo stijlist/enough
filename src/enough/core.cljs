@@ -75,8 +75,8 @@
        (html 
          [:div nil 
           (str (om/props this))
-          [:button {:onClick #(om/transact! this `[(parameters/update {:name ~name :editing? true})])} "Set editing to true"]
-          #_[:button {:onClick #(om/transact! this `[(parameters/update {:name ~name :value 2})])} "Set value to 2"]]))))
+          [:button {:onClick #(om/transact! this `[(parameters/update {:name ~name :editing? true})])} "Edit"]
+          [:button {:onClick #(om/transact! this `[(parameters/update {:name ~name :value 2})])} "Set value to 2"]]))))
 
 (def parameter (om/factory Parameter {:keyfn :name}))
 (def chart (om/factory Chart))
