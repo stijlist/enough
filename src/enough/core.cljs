@@ -60,6 +60,11 @@
                (chart/thousands->k d)]])
            data)]))))
       
+(defn coerce-to-type-of [orig v]
+  (condp = (type orig)
+    js/Number (js/Number v)
+    js/String (js/String v)))
+
 (defui Parameter
   static om/Ident
   (ident [this {:keys [name]}]
@@ -68,11 +73,9 @@
   (query [this]
     '[:name :value :editing?])
   Object
-  (init-state [_]
-    {:value "5"})
   (render [this]
     (let [{:keys [name value editing?] :as props} (om/props this)
-          {:keys [value] :as state} (om/get-state this)]
+          {:keys [field-value] :as state} (om/get-state this)]
      (html 
        [:div nil 
         (str (om/props this))
@@ -82,20 +85,19 @@
             [:label "New value:"] 
             [:input 
              {:type "text" 
-              :value value
+              :value (or field-value value)
               :onChange #(let [new (.. % -target -value)] 
-                           (om/set-state! this {:value new}))}]
+                           (om/set-state! this {:field-value new}))}]
             [:button 
              {:onClick 
               (fn [e]
-                (let [numeric-value (js/parseInt value 10)]
-                  (when-not (js/isNaN numeric-value)
-                    (om/transact! this 
-                      `[(parameters/update 
-                          {:name ~name 
-                           :value ~numeric-value 
-                           :editing? false}) 
-                        :chart-values]))))}
+                (let [new-value (coerce-to-type-of value field-value)]
+                  (om/transact! this 
+                    `[(parameters/update 
+                        {:name ~name 
+                         :value ~new-value 
+                         :editing? false}) 
+                      :chart-values])))}
               "Save"]])]))))
 
 (def parameter (om/factory Parameter {:keyfn :name}))
