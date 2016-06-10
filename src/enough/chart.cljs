@@ -29,15 +29,16 @@
 
 (defn bar [data {:keys [width height]}]
   (let [y-scale (linear-scale [0 (apply max data)] [0 height])
-        bar-width (/ width (count data))]
+        bar-width 40]
     (html
-      [:svg {:class "chart" :height height :width width}
-       (map-indexed 
-         (fn [i d]
-           [:g {:transform (translate (* i bar-width) 0)}
-            [:rect 
-             {:y (- height (y-scale d)) :height (y-scale d) :width (dec bar-width)}]
-            [:text 
-             {:x (+ 7 (/ bar-width 2)) :y (- height 3) :dy "0.15em"} 
-             (thousands->k d)]])
-         data)])))
+      [:div {:style {:overflow "scroll" :height (str 100 #_width "px") :width (str width "px")}}
+        [:svg {:class "chart" :height (str height "px") :width (str (* bar-width (count data)) "px")}
+         (map-indexed 
+           (fn [i d]
+             [:g {:transform (translate (* i bar-width) 0)}
+              [:rect 
+               {:y (- height (y-scale d)) :height (y-scale d) :width (dec bar-width)}]
+              [:text 
+               {:x (+ 7 (/ bar-width 2)) :y (- height 3) :dy "0.15em"} 
+               (thousands->k d)]])
+           data)]])))

@@ -50,7 +50,7 @@
     (-> (om/props this) 
       (rename-keys ident->chart-key)
       (chart/years-til-retirement)
-      (chart/bar {:width 200 :height 200}))))
+      (chart/bar {:width 400 :height 200}))))
 
 (defn coerce-to-type-of [orig v]
   (condp = (type orig)
@@ -105,7 +105,7 @@
     (let [{:keys [parameters chart-values]} (om/props this)]
       (html 
         [:div
-         [:div nil (map parameter parameters)]
+         [:div (map parameter parameters)]
          (chart chart-values)]))))
 
 (def parser (om/parser {:read read :mutate mutate}))
