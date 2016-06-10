@@ -92,7 +92,9 @@
             [:button 
              {:onClick 
               (fn [e]
-                (om/transact! this `[(parameters/update {:name ~name :value ~value :editing? false})]))}
+                (let [numeric-value (string/parseInt value)]
+                  (when-not (js/isNaN numeric-value)
+                    (om/transact! this `[(parameters/update {:name ~name :value ~numeric-value :editing? false}) :chart-values]))))}
               "Save"]])]))))
 
 (def parameter (om/factory Parameter {:keyfn :name}))
