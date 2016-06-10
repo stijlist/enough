@@ -50,7 +50,7 @@
     (-> (om/props this) 
       (rename-keys ident->chart-key)
       (chart/years-til-retirement)
-      (chart/bar {:width 400 :height 200}))))
+      (chart/bar {:width 400 :height 500}))))
 
 (defn coerce-to-type-of [orig v]
   (condp = (type orig)
