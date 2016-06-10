@@ -1,12 +1,16 @@
 (ns enough.core
   (:require
+   [enough.chart :as chart]
    [goog.dom :as dom]
    [om.next :as om :refer-macros [defui]]
    [sablono.core :refer-macros [html]]))
 
 (enable-console-print!)
 (def init-data
-  {:parameters [{:name "Salary" :value 1 :editing? false}]})
+  {:parameters 
+   [{:name "Salary" :value 10 :editing? false}
+    {:name "Expenses" :value 5 :editing? false}
+    {:name "Rate of return" :value 0.1 :editing? false}]})
 
 (defmulti read om/dispatch)
 
@@ -18,6 +22,13 @@
   [{:keys [state]} key params]
   {:value (get-normalized-toplevel-key state key)})
 
+(defmethod read :chart-values
+  [{:keys [state]} key params]
+  {:value 
+   (->> (get-normalized-toplevel-key state :parameters) 
+     (map (juxt :name :value)) 
+     (into {}))})
+
 (defmulti mutate om/dispatch)
 
 (defmethod mutate 'parameters/update
@@ -27,33 +38,61 @@
    (fn []
      (swap! state update-in [:parameters/by-name name] (fn [old] (merge old params))))})
 
-(defui Parameter
-  static om/Ident
-  (ident [this {:keys [name]}]
-    [:parameters/by-name name])
+(defui Chart
   static om/IQuery
   (query [this]
-    '[:name :value :editing?])
+    {:parameters '[:name :value]})
   Object
   (render [this]
-    (let [{:keys [name value editing?] :as props} (om/props this)]
-     (html 
-       [:div nil 
-        (str (om/props this))
-        [:button {:onClick #(om/transact! this '[(parameters/update {:name "Salary" :editing? true})])} "Set editing to true"]
-        [:button {:onClick #(om/transact! this '[(parameters/update {:name "Salary" :value 2})])} "Set value to 2"]]))))
+    (let [{salary "Salary" expenses "Expenses" rate-of-return "Rate of return"} (om/props this)
+          data (chart/years-til-retirement {:salary salary :expenses expenses :rate-of-return rate-of-return}) 
+          height 200
+          width 200
+          y-scale (chart/linear-scale [0 (apply max data)] [0 height])
+          bar-width (/ width (count data))]
+      (html
+        [:svg {:class "chart" :height height :width width}
+         (map-indexed 
+           (fn [i d]
+             [:g {:transform (chart/translate (* i bar-width) 0)}
+              [:rect 
+               {:y (- height (y-scale d)) :height (y-scale d) :width (dec bar-width)}]
+              [:text 
+               {:x (+ 7 (/ bar-width 2)) :y (- height 3) :dy "0.15em"} 
+               (chart/thousands->k d)]])
+           data)]))))
+      
+  (defui Parameter
+    static om/Ident
+    (ident [this {:keys [name]}]
+      [:parameters/by-name name])
+    static om/IQuery
+    (query [this]
+      '[:name :value :editing?])
+    Object
+    (render [this]
+      (let [{:keys [name value editing?] :as props} (om/props this)]
+       (html 
+         [:div nil 
+          (str (om/props this))
+          [:button {:onClick #(om/transact! this '[(parameters/update {:name "Salary" :editing? true})])} "Set editing to true"]
+          [:button {:onClick #(om/transact! this '[(parameters/update {:name "Salary" :value 2})])} "Set value to 2"]]))))
 
 (def parameter (om/factory Parameter {:keyfn :name}))
+(def chart (om/factory Chart))
 
 (defui Root
   static om/IQuery
   (query [this]
-    (let [subquery (om/get-query Parameter)]
-      `[{:parameters ~subquery}]))
+    (let [pquery (om/get-query Parameter) cquery (om/get-query Chart)]
+      `[{:parameters ~pquery} :chart-values]))
   Object
   (render [this]
-    (html 
-      [:div nil (map parameter (:parameters (om/props this)))])))
+    (let [{:keys [parameters chart-values]} (om/props this)]
+      (html 
+        [:div
+         (chart chart-values)
+         [:div nil (map parameter parameters)]]))))
 
 (def parser (om/parser {:read read :mutate mutate}))
 (def reconciler (om/reconciler {:state init-data :parser parser}))
