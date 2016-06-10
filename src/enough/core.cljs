@@ -75,8 +75,8 @@
        (html 
          [:div nil 
           (str (om/props this))
-          [:button {:onClick #(om/transact! this '[(parameters/update {:name "Salary" :editing? true})])} "Set editing to true"]
-          [:button {:onClick #(om/transact! this '[(parameters/update {:name "Salary" :value 2})])} "Set value to 2"]]))))
+          [:button {:onClick #(om/transact! this `[(parameters/update {:name ~name :editing? true})])} "Set editing to true"]
+          #_[:button {:onClick #(om/transact! this `[(parameters/update {:name ~name :value 2})])} "Set value to 2"]]))))
 
 (def parameter (om/factory Parameter {:keyfn :name}))
 (def chart (om/factory Chart))
@@ -91,8 +91,8 @@
     (let [{:keys [parameters chart-values]} (om/props this)]
       (html 
         [:div
-         (chart chart-values)
-         [:div nil (map parameter parameters)]]))))
+         [:div nil (map parameter parameters)]
+         (chart chart-values)]))))
 
 (def parser (om/parser {:read read :mutate mutate}))
 (def reconciler (om/reconciler {:state init-data :parser parser}))
