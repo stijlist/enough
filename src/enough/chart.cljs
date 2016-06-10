@@ -32,7 +32,7 @@
         true-height 1000
         bar-width 40]
     (html
-      [:div {:style {:overflow "scroll" :overflow-y "scroll" :height (str height "px") :width (str width "px")}}
+      [:div {:style {:overflow "scroll" :height (str height "px") :width (str width "px")}}
         [:svg {:class "chart" :height (str true-height "px") :width (str (* bar-width (count data)) "px")}
          (map-indexed 
            (fn [i d]
