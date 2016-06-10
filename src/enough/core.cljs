@@ -2,6 +2,8 @@
   (:require
    [enough.chart :as chart]
    [goog.dom :as dom]
+   [goog.object :as obj]
+   [goog.string :as string]
    [om.next :as om :refer-macros [defui]]
    [sablono.core :refer-macros [html]]))
 
@@ -62,21 +64,36 @@
                (chart/thousands->k d)]])
            data)]))))
       
-  (defui Parameter
-    static om/Ident
-    (ident [this {:keys [name]}]
-      [:parameters/by-name name])
-    static om/IQuery
-    (query [this]
-      '[:name :value :editing?])
-    Object
-    (render [this]
-      (let [{:keys [name value editing?] :as props} (om/props this)]
-       (html 
-         [:div nil 
-          (str (om/props this))
+(defui Parameter
+  static om/Ident
+  (ident [this {:keys [name]}]
+    [:parameters/by-name name])
+  static om/IQuery
+  (query [this]
+    '[:name :value :editing?])
+  Object
+  (init-state [_]
+    {:value "5"})
+  (render [this]
+    (let [{:keys [name value editing?] :as props} (om/props this)
+          {:keys [value] :as state} (om/get-state this)]
+     (html 
+       [:div nil 
+        (str (om/props this))
+        (if (not editing?)
           [:button {:onClick #(om/transact! this `[(parameters/update {:name ~name :editing? true})])} "Edit"]
-          [:button {:onClick #(om/transact! this `[(parameters/update {:name ~name :value 2})])} "Set value to 2"]]))))
+          [:div 
+            [:label "New value:"] 
+            [:input 
+             {:type "text" 
+              :value value
+              :onChange #(let [new (.. % -target -value)] 
+                           (om/update-state! this update :value (constantly new)))}]
+            [:button 
+             {:onClick 
+              (fn [e]
+                (om/transact! this `[(parameters/update {:name ~name :value 2})]))}
+              "Save"]])]))))
 
 (def parameter (om/factory Parameter {:keyfn :name}))
 (def chart (om/factory Chart))
