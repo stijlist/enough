@@ -88,11 +88,11 @@
              {:type "text" 
               :value value
               :onChange #(let [new (.. % -target -value)] 
-                           (om/update-state! this update :value (constantly new)))}]
+                           (om/set-state! this {:value new}))}]
             [:button 
              {:onClick 
               (fn [e]
-                (om/transact! this `[(parameters/update {:name ~name :value 2})]))}
+                (om/transact! this `[(parameters/update {:name ~name :value ~value :editing? false})]))}
               "Save"]])]))))
 
 (def parameter (om/factory Parameter {:keyfn :name}))
