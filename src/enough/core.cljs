@@ -2,8 +2,6 @@
   (:require
    [enough.chart :as chart]
    [goog.dom :as dom]
-   [goog.object :as obj]
-   [goog.string :as string]
    [om.next :as om :refer-macros [defui]]
    [sablono.core :refer-macros [html]]))
 
@@ -41,9 +39,6 @@
      (swap! state update-in [:parameters/by-name name] (fn [old] (merge old params))))})
 
 (defui Chart
-  static om/IQuery
-  (query [this]
-    {:parameters '[:name :value]})
   Object
   (render [this]
     (prn "re-render Chart" (-> this om/props))
@@ -93,7 +88,7 @@
             [:button 
              {:onClick 
               (fn [e]
-                (let [numeric-value (string/parseInt value)]
+                (let [numeric-value (js/parseInt value 10)]
                   (when-not (js/isNaN numeric-value)
                     (om/transact! this 
                       `[(parameters/update 
