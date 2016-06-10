@@ -6,6 +6,10 @@
    [sablono.core :refer-macros [html]]))
 
 (enable-console-print!)
+
+(def ident->chart-key
+  {"Salary" :salary "Expenses" :expenses "Rate of return" :rate-of-return})
+
 (def init-data
   {:parameters 
    [{:name "Salary" :value 10000 :editing? false}
@@ -46,10 +50,10 @@
   (render [this]
     (prn "re-render Chart" (-> this om/props))
     (-> (om/props this) 
-      (rename-keys {"Salary" :salary "Expenses" :expenses "Rate of return" :rate-of-return})
+      (rename-keys ident->chart-key)
       (chart/years-til-retirement)
       (chart/bar {:width 200 :height 200}))))
-      
+
 (defn coerce-to-type-of [orig v]
   (condp = (type orig)
     js/Number (js/Number v)
