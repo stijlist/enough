@@ -29,7 +29,7 @@
 (defmethod read :chart-values
   [{:keys [state]} key params]
   {:value 
-  (into {} (map (juxt :name :value)) (get-normalized-toplevel-key state :parameters))})
+   (into {} (map (juxt :name :value)) (get-normalized-toplevel-key state :parameters))})
 
 (defmulti mutate om/dispatch)
 
@@ -98,7 +98,7 @@
 (defui Root
   static om/IQuery
   (query [this]
-    (let [pquery (om/get-query Parameter) cquery (om/get-query Chart)]
+    (let [pquery (om/get-query Parameter)]
       `[{:parameters ~pquery} :chart-values]))
   Object
   (render [this]
