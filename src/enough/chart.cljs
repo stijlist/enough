@@ -28,10 +28,10 @@
   (str (int (/ n 1000)) "k"))
 
 (defn bar [data {:keys [width height]}]
-  (let [y-scale (linear-scale [0 (apply max data)] [0 height])
+  (let [y-scale (linear-scale [0 500000] [0 500])
         bar-width 40]
     (html
-      [:div {:style {:overflow "scroll" :height (str 100 #_width "px") :width (str width "px")}}
+      [:div {:style {:overflow "scroll" :height (str height "px") :width (str width "px")}}
         [:svg {:class "chart" :height (str height "px") :width (str (* bar-width (count data)) "px")}
          (map-indexed 
            (fn [i d]
