@@ -29,9 +29,7 @@
 (defmethod read :chart-values
   [{:keys [state]} key params]
   {:value 
-   (->> (get-normalized-toplevel-key state :parameters) 
-     (map (juxt :name :value)) 
-     (into {}))})
+  (into {} (map (juxt :name :value)) (get-normalized-toplevel-key state :parameters))})
 
 (defmulti mutate om/dispatch)
 
