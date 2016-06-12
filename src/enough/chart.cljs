@@ -1,14 +1,17 @@
 (ns enough.chart
   (:require [sablono.core :refer-macros [html]]))
 
+;; now, for each point, we want to overlay the year's expenses onto the year's
+;; income. so the return values of this have to be separate lists of data
+;; points - the income growth, balance growth, and expenses
 (defn years-til-retirement
   [{:keys [salary expenses rate-of-return cutoff]}]
   {:pre [(number? salary) 
          (number? expenses) 
          (number? rate-of-return)
          (not (nil? cutoff))]}
-  (loop [years [0]]
-    (let [balance (peek years)
+  (loop [years []]
+    (let [balance (or (:balance (peek years)) 0)
           growth (* balance rate-of-return)
           new-balance (- (+ balance salary growth) expenses)
           done? (or 
@@ -17,7 +20,12 @@
                   (< balance 0))]
       (if done?
         years
-        (recur (conj years new-balance))))))
+        (recur 
+          (conj years 
+            {:balance new-balance 
+             :expenses expenses 
+             :income-growth growth 
+             :income salary}))))))
 
 (defn linear-scale [[domain-start domain-end]
                     [range-start range-end]]
@@ -32,18 +40,36 @@
   (str (int (/ n 1000)) "k"))
 
 (defn bar-chart [data {:keys [width height]}]
-  (let [true-height 500
+  (let [balances (map :balance data) 
+        expenses (map (juxt :balance :expenses) data)
+        true-height 500
         y-scale (linear-scale [0 1000000] [0 true-height])
         bar-width 40]
     (html
       [:div {:style {:overflow "scroll" :max-width "100%" }}
-        [:svg {:class "chart" :height (str true-height "px") :width (str (* bar-width (count data)) "px")}
+        [:svg 
+         {:class "chart" 
+          :height (str true-height "px") 
+          :width (str (* bar-width (count data)) "px")}
          (map-indexed 
            (fn [i d]
              [:g {:transform (translate (* i bar-width) 0)}
               [:rect 
-               {:y (- true-height (y-scale d)) :height (y-scale d) :width (dec bar-width)}]
+               {:fill "steelblue"
+                :y (- true-height (y-scale d)) 
+                :height (y-scale d) 
+                :width (dec bar-width)}]
               [:text 
                {:x (+ 7 (/ bar-width 2)) :y (- true-height 3) :dy "0.15em"} 
                (thousands->k d)]])
-           data)]])))
+           balances)
+         (map-indexed
+           (fn [i [balances expenses]]
+             [:g {:transform (translate (* i bar-width) 0)}
+              [:rect
+               {:fill "lightcoral"
+                :y (- (- true-height (y-scale expenses)) (y-scale balances))
+                :height (y-scale expenses)
+                :width (dec bar-width)}]])
+           expenses)
+         ]])))
