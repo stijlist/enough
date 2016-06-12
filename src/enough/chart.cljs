@@ -31,7 +31,7 @@
 (defn thousands->k [n]
   (str (int (/ n 1000)) "k"))
 
-(defn bar [data {:keys [width height]}]
+(defn bar-chart [data {:keys [width height]}]
   (let [true-height 500
         y-scale (linear-scale [0 1000000] [0 true-height])
         bar-width 40]

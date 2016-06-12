@@ -43,7 +43,6 @@
 (defn rename-keys [m keymap]
   (into {} (map (fn [[k v]] [(get keymap k) v])) m))
 
-(defn i [x] (prn x) x)
 (defui Chart
   Object
   (render [this]
@@ -52,7 +51,7 @@
       (rename-keys ident->chart-key)
       (assoc :cutoff 65)
       (chart/years-til-retirement)
-      (chart/bar {:width 400 :height 500}))))
+      (chart/bar-chart {:width 400 :height 500}))))
 
 (defn coerce-to-type-of [orig v]
   (condp = (type orig)
