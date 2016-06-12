@@ -1,2 +1,5 @@
 resources/public/js/**
 target/*
+.DS_Store
+.lein-repl-history
+figwheel_server.log
