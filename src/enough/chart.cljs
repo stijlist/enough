@@ -44,7 +44,8 @@
         expenses (map (juxt :balance :expenses) data)
         true-height 500
         y-scale (linear-scale [0 1000000] [0 true-height])
-        bar-width 40]
+        bar-width 40
+        text-offsets {:x (+ 7 (/ bar-width 2)) :y (- true-height 3) :dy "0.15em"}]
     (html
       [:div {:style {:overflow "scroll" :max-width "100%" }}
         [:svg 
@@ -60,16 +61,20 @@
                 :height (y-scale d) 
                 :width (dec bar-width)}]
               [:text 
-               {:x (+ 7 (/ bar-width 2)) :y (- true-height 3) :dy "0.15em"} 
+               text-offsets 
                (thousands->k d)]])
            balances)
          (map-indexed
-           (fn [i [balances expenses]]
-             [:g {:transform (translate (* i bar-width) 0)}
+           (fn [i [balance-offset d]]
+             [:g {:transform 
+                  (translate (* i bar-width) (- (y-scale balance-offset)))}
               [:rect
                {:fill "lightcoral"
-                :y (- (- true-height (y-scale expenses)) (y-scale balances))
-                :height (y-scale expenses)
-                :width (dec bar-width)}]])
+                :y (- true-height (y-scale d))
+                :height (y-scale d)
+                :width (dec bar-width)}]
+              [:text
+               text-offsets
+               (thousands->k d)]])
            expenses)
          ]])))
