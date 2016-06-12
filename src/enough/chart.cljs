@@ -5,12 +5,16 @@
   [{:keys [salary expenses rate-of-return cutoff]}]
   {:pre [(number? salary) 
          (number? expenses) 
-         (number? rate-of-return)]}
+         (number? rate-of-return)
+         (not (nil? cutoff))]}
   (loop [years [0]]
     (let [balance (peek years)
           growth (* balance rate-of-return)
           new-balance (- (+ balance salary growth) expenses)
-          done? (if cutoff (>= (count years) cutoff) (>= growth expenses))]
+          done? (or 
+                  (>= (count years) cutoff)
+                  (>= growth expenses)
+                  (<= balance 0))]
       (if done?
         years
         (recur (conj years new-balance))))))

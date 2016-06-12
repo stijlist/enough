@@ -43,12 +43,14 @@
 (defn rename-keys [m keymap]
   (into {} (map (fn [[k v]] [(get keymap k) v])) m))
 
+(defn i [x] (prn x) x)
 (defui Chart
   Object
   (render [this]
     (prn "re-render Chart" (-> this om/props))
     (-> (om/props this) 
       (rename-keys ident->chart-key)
+      (assoc :cutoff 65)
       (chart/years-til-retirement)
       (chart/bar {:width 400 :height 500}))))
 
@@ -69,8 +71,8 @@
     (let [{:keys [name value editing?] :as props} (om/props this)
           {:keys [field-value] :as state} (om/get-state this)]
      (html 
-       [:div nil 
-        (str (om/props this))
+       [:div nil
+        [:span (str name ": " value)] 
         (if (not editing?)
           [:button {:onClick #(om/transact! this `[(parameters/update {:name ~name :editing? true})])} "Edit"]
           [:div 
