@@ -60,9 +60,7 @@
                 :y (- true-height (y-scale d)) 
                 :height (y-scale d) 
                 :width (dec bar-width)}]
-              [:text 
-               text-offsets 
-               (thousands->k d)]])
+              [:text text-offsets (thousands->k d)]])
            balances)
          (map-indexed
            (fn [i [balance-offset d]]
@@ -73,8 +71,6 @@
                 :y (- true-height (y-scale d))
                 :height (y-scale d)
                 :width (dec bar-width)}]
-              [:text
-               text-offsets
-               (thousands->k d)]])
+              [:text text-offsets (thousands->k d)]])
            expenses)
          ]])))
