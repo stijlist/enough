@@ -14,7 +14,7 @@
           done? (or 
                   (>= (count years) cutoff)
                   (>= growth expenses)
-                  (<= balance 0))]
+                  (< balance 0))]
       (if done?
         years
         (recur (conj years new-balance))))))
