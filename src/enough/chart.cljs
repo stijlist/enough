@@ -73,7 +73,7 @@
              [:g {:transform
                   (translate (* i bar-width) (- (- (y-scale balance-offset) (y-scale d))))}
               [:rect 
-               {:fill "lightgreen"
+               {:fill "mediumaquamarine"
                 :y (- true-height (y-scale d))
                 :height (y-scale d)
                 :width (dec bar-width)}]
