@@ -9,4 +9,4 @@
                  [cljsjs/react "15.1.0-0"]
                  [cljsjs/react-dom "15.1.0-0"]
                  [org.omcljs/om "1.0.0-alpha36"]
-                 [figwheel-sidecar "0.5.0-SNAPSHOT" :scope "test"]])
+                 [figwheel-sidecar "0.5.4" :scope "test"]])
