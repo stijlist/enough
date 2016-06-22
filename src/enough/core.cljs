@@ -153,7 +153,6 @@
   Object
   (render [this]
     (let [{:keys [parameters chart-values life-events] :as props} (om/props this)]
-      #_(prn props)
       (html 
         [:div
          [:div (map parameter parameters)]
