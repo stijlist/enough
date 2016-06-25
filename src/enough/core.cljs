@@ -166,11 +166,23 @@
       `[{:parameters ~pquery} :chart-values {:life-events ~lquery}]))
   Object
   (render [this]
-    (let [{:keys [parameters chart-values life-events] :as props} (om/props this)]
+    (let [{:keys [parameters chart-values life-events] :as props} (om/props this)
+          {:keys [event/creating? event/name]} (om/get-state this)]
       (html 
         [:div
          [:div (map parameter parameters)]
-         (map life-event life-events)
+         [:div
+           (map life-event life-events)
+           (if (not event/creating?)
+             [:button {:onClick #(om/set-state! this {:event/creating? true})} "New life event"]
+             (if (not event/pending)
+               [:span 
+                [:label "Life event name:"]
+                [:input 
+                 {:value (or (:event/name (om/get-state this)) "")
+                  :onChange #(om/update-state! this merge {:event/name (.. % -target -value)})}]
+                [:button {:onClick #(om/update-state! this merge {:event/pending {:name event/name}})} "Add costs"]
+                [:button {:onClick #(om/set-state! this {})} "Cancel"]]))]
          (chart chart-values)]))))
 
 (def parser (om/parser {:read read :mutate mutate}))
