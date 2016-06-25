@@ -45,7 +45,10 @@
 (defmethod read :chart-values
   [{:keys [state]} key params]
   {:value 
-   (into {} (map (juxt :name :value)) (get-normalized-toplevel-key state :parameters))})
+   (assoc 
+     (into {} (map (juxt :name :value)) (get-normalized-toplevel-key state :parameters))
+     :year->life-events
+     (life-events-by-year (get-normalized-toplevel-key state :life-events)))})
 
 (defmethod read :life-events
   [{:keys [state]} key params]
