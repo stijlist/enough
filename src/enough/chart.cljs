@@ -12,13 +12,14 @@
           growth (* balance rate-of-return)
           new-balance (- (+ balance salary growth) expenses)
           year (count years)
-          cost-this-year (reduce + (get year->life-events year))
+          cost-this-year (reduce + (map #(get (:costs-per-year %) year) (get year->life-events year)))
           done? (or 
                   (>= year cutoff)
                   (>= growth expenses)
                   (< balance 0))
           next (conj years {:balance new-balance 
                             :expenses expenses 
+                            :additional-expenses cost-this-year
                             :income-growth growth 
                             :income salary})]
       (if done? next (recur next)))))
@@ -48,15 +49,16 @@
 
 (defn render-expenses 
   [{:keys [bar-width true-height y-scale text-offsets]}]
-  (fn [i [balance-offset d]]
-    [:g {:transform 
-         (translate (* i bar-width) (- (y-scale balance-offset)))}
-     [:rect
-      {:fill "lightcoral"
-       :y (- true-height (y-scale d))
-       :height (y-scale d)
-       :width (dec bar-width)}]
-     [:text text-offsets (thousands->k d)]]))
+  (fn [i [balance-offset expenses additional-expenses]]
+    (let [d (+ expenses additional-expenses)]
+      [:g {:transform 
+           (translate (* i bar-width) (- (y-scale balance-offset)))}
+       [:rect
+        {:fill "lightcoral"
+         :y (- true-height (y-scale d))
+         :height (y-scale d)
+         :width (dec bar-width)}]
+       [:text text-offsets (thousands->k d)]])))
 
 (defn render-income-growth
   [{:keys [bar-width true-height y-scale text-offsets]}]
@@ -73,7 +75,7 @@
 
 (defn bar-chart [data {:keys [width height]}]
   (let [balances (map :balance data) 
-        expenses (map (juxt :balance :expenses) data)
+        expenses (map (juxt :balance :expenses :additional-expenses) data)
         income-growth (map (juxt :balance :income-growth) data)
         true-height 500
         bar-width 40
