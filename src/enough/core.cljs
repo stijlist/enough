@@ -2,6 +2,7 @@
   (:require
    [enough.chart :as chart]
    [goog.dom :as dom]
+   [clojure.set :as set]
    [om.next :as om :refer-macros [defui]]
    [sablono.core :refer-macros [html]]))
 
@@ -31,8 +32,6 @@
   (let [get-year-ev-pairs (fn [e] (for [k (-> e :costs-per-year keys)] [k e]))]
     (multimap (mapcat get-year-ev-pairs life-events))))
 
-(prn (life-events-by-year (:life-events init-data)))
-
 (defmulti read om/dispatch)
 
 (defn get-normalized-toplevel-key [state key]
@@ -61,15 +60,12 @@
    (fn []
      (swap! state update-in [:parameters/by-name name] (fn [old] (merge old params))))})
 
-(defn rename-keys [m keymap]
-  (into {} (map (fn [[k v]] [(get keymap k) v])) m))
-
 (defui Chart
   Object
   (render [this]
     (prn "re-render Chart" (-> this om/props))
     (-> (om/props this) 
-      (rename-keys ident->chart-key)
+      (set/rename-keys ident->chart-key)
       (assoc :cutoff 65)
       (chart/years-til-retirement)
       (chart/bar-chart {:width 400 :height 500}))))
