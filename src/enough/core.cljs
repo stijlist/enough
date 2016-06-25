@@ -16,21 +16,22 @@
     {:name "Expenses" :value 80000 :editing? false}
     {:name "Rate of return" :value 0.1 :editing? false}]
    :life-events
-   [{:name "Go to Milan with Emily!" :costs-per-year {0 2000}}]})
+   [{:name "Milan trip!" :costs-per-year {0 2000}}
+    {:name "Japan trip!" :costs-per-year {0 1000 1 3000}}]})
 
-;; {0 {:name "Go to Milan with Emily" :costs-per-year 2000}}
+(defn multimap [kvs]
+  (let [assoc-val-as-set 
+        (fn [m [k v]]
+          (if (contains? m k) 
+            (assoc m k (conj (get m k) v))
+            (assoc m k #{v})))]
+    (reduce assoc-val-as-set {} kvs)))
+
 (defn life-events-by-year [life-events]
-  (into []
-    (reduce 
-      (fn [acc ev] 
-        (for [[year cost] (:costs-per-year ev)]
-          (update acc year 
-            (fn [costs-in-year] 
-              (conj costs-in-year (assoc ev :costs-per-year cost))))))
-      {}
-      life-events)))
+  (let [get-year-ev-pairs (fn [e] (for [k (-> e :costs-per-year keys)] [k e]))]
+    (multimap (mapcat get-year-ev-pairs life-events))))
 
-(prn "Life events by year" (life-events-by-year (:life-events init-data)))
+(prn (life-events-by-year (:life-events init-data)))
 
 (defmulti read om/dispatch)
 
