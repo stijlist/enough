@@ -2,7 +2,7 @@
   (:require [sablono.core :refer-macros [html]]))
 
 (defn years-til-retirement
-  [{:keys [salary expenses rate-of-return cutoff]}]
+  [{:keys [salary expenses rate-of-return cutoff year->life-events]}]
   {:pre [(number? salary) 
          (number? expenses) 
          (number? rate-of-return)
@@ -11,8 +11,10 @@
     (let [balance (or (:balance (peek years)) 0)
           growth (* balance rate-of-return)
           new-balance (- (+ balance salary growth) expenses)
+          year (count years)
+          cost-this-year (reduce + (get year->life-events year))
           done? (or 
-                  (>= (count years) cutoff)
+                  (>= year cutoff)
                   (>= growth expenses)
                   (< balance 0))
           next (conj years {:balance new-balance 

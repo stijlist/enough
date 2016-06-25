@@ -18,6 +18,20 @@
    :life-events
    [{:name "Go to Milan with Emily!" :costs-per-year {0 2000}}]})
 
+;; {0 {:name "Go to Milan with Emily" :costs-per-year 2000}}
+(defn life-events-by-year [life-events]
+  (into []
+    (reduce 
+      (fn [acc ev] 
+        (for [[year cost] (:costs-per-year ev)]
+          (update acc year 
+            (fn [costs-in-year] 
+              (conj costs-in-year (assoc ev :costs-per-year cost))))))
+      {}
+      life-events)))
+
+(prn "Life events by year" (life-events-by-year (:life-events init-data)))
+
 (defmulti read om/dispatch)
 
 (defn get-normalized-toplevel-key [state key]
