@@ -10,9 +10,9 @@
   (loop [years []]
     (let [balance (or (:balance (peek years)) 0)
           growth (* balance rate-of-return)
-          new-balance (- (+ balance salary growth) expenses)
           year (count years)
           cost-this-year (reduce + (map #(get (:costs-per-year %) year) (get year->life-events year)))
+          new-balance (- (+ balance salary growth) (+ expenses cost-this-year))
           done? (or 
                   (>= year cutoff)
                   (>= growth expenses)
