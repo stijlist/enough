@@ -18,7 +18,9 @@
     {:name "Rate of return" :value 0.1 :editing? false}]
    :life-events
    [{:name "Milan trip!" :costs-per-year {0 2000}}
-    {:name "Japan trip!" :costs-per-year {0 1000 1 3000}}]})
+    {:name "Japan trip!" :costs-per-year {0 1000 1 3000}}]
+   ;; temporary, TODO(stijlist): reset to nil
+   :pending-event {}})
 
 (defn multimap [kvs]
   (let [assoc-val-as-set 
@@ -54,6 +56,10 @@
   [{:keys [state]} key params]
   {:value (get-normalized-toplevel-key state key)})
 
+(defmethod read :pending-event
+  [{:keys [state]} key params]
+  {:value (:pending-event @state)})
+
 (defmulti mutate om/dispatch)
 
 (defmethod mutate 'parameters/update
@@ -62,6 +68,28 @@
   {:action
    (fn []
      (swap! state update-in [:parameters/by-name name] (fn [old] (merge old params))))})
+
+(defmethod mutate 'events/create-pending
+  [{:keys [state]} key params]
+  {:action
+   (fn []
+     (swap! state assoc :pending-event {}))})
+
+(defmethod mutate 'event/update-pending
+  [{:keys [state]} key {:keys [pending-index pending-cost]}]
+  (let [ev (:pending-event state)
+        costs (:costs-per-year ev)
+        new-costs (assoc costs pending-index pending-cost)]
+    {:action 
+     (fn []
+       (swap! state update-in [:pending-event :costs-per-year] merge {:costs-per-year new-costs}))}))
+
+(defmethod mutate 'events/save
+  [{:keys [state]} key params]
+  (let [pending (:pending-event state)]
+    {:action
+     (fn []
+       (swap! state update-in :life-events conj pending))}))
 
 (defui Chart
   Object
@@ -155,39 +183,72 @@
                       :chart-values])))}
               "Save"]])]))))
 
+(defn track-in [component k]
+  (fn [e]
+    (om/update-state! component merge {k (.. e -target -value)})))
+
+(defui PendingLifeEvent
+  static om/IQuery
+  (query [this]
+    [:pending-event])
+  Object
+  (render [this]
+    (let [{:keys [name costs-per-year] :as pending} (om/props this)
+          creating? (not (nil? pending))
+          {:keys [pending-name pending-cost pending-index]} (om/get-state this)]
+      (html
+        (if (not creating?)
+          [:button 
+           {:onClick #(om/transact! this '[(events/create-pending)])}
+           "New life event"]
+          [:div
+           [:div
+            [:label "Event name:"]
+            [:input {:value (or pending-name "") :type "text" :onChange (track-in this :pending-name)}]]
+           [:div
+            [:label "Cost of event:"]
+            [:input {:value (or pending-cost "") :type "text" :onChange (track-in this :pending-cost)}]]
+           [:div
+            [:label "Years from now:"]
+            [:input {:value (or pending-index "") :type "text" :onChange (track-in this :pending-index)}]
+            [:button 
+             {:onClick 
+              #(if (and pending-cost pending-index)
+                (do
+                  (om/transact! this 
+                    `[(event/update-pending {:cost ~pending-cost :cost-index ~pending-index})])
+                  (om/update-state! this dissoc :pending-cost :pending-index)
+                  ))}
+             "Add another cost"]
+            [:button 
+             {:onClick 
+              #(if pending
+                (om/transact! this `[(event/save ~pending)]))}
+             "Done"]]]))
+    )
+  )
+)
+
 (def parameter (om/factory Parameter {:keyfn :name}))
 (def chart (om/factory Chart))
 (def life-event (om/factory LifeEvent {:keyfn :name}))
+(def life-event-pending (om/factory PendingLifeEvent))
 
 (defui Root
   static om/IQuery
   (query [this]
     (let [pquery (om/get-query Parameter) lquery (om/get-query LifeEvent)]
-      `[{:parameters ~pquery} :chart-values {:life-events ~lquery}]))
+      `[{:parameters ~pquery} :chart-values {:life-events ~lquery} :pending-event]))
   Object
   (render [this]
-    (let [{:keys [parameters chart-values life-events] :as props} (om/props this)
-          {:keys [event-creating? event-name event-pending event-cost]} (om/get-state this)]
+    (let [{:keys [parameters chart-values life-events pending-event] :as props} (om/props this)
+          ]
       (html 
         [:div
          [:div (map parameter parameters)]
          [:div
            (map life-event life-events)
-           (if (not event-creating?)
-             [:button {:onClick #(om/set-state! this {:event-creating? true})} "New life event"]
-             (if (not event-pending)
-               [:span 
-                [:label "Life event name:"]
-                [:input 
-                 {:value (or (:event-name (om/get-state this)) "")
-                  :onChange #(om/update-state! this merge {:event-name (.. % -target -value)})}]
-                [:button {:onClick #(om/update-state! this merge {:event-pending {:name event-name}})} "Add costs"]
-                [:button {:onClick #(om/set-state! this {})} "Cancel"]]
-               [:div
-                (str "Adding \"" (:name event-pending) "\":")
-                [:div "Costs:"]
-                [:ul
-                  [:li "New cost:" [:input {:type "text" :value (or event-cost 0)}]]]]))]
+           (life-event-pending pending-event)]
          (chart chart-values)]))))
 
 (def parser (om/parser {:read read :mutate mutate}))
