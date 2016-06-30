@@ -3,6 +3,7 @@
    [enough.chart :as chart]
    [goog.dom :as dom]
    [clojure.set :as set]
+   [cljs.spec :as s]
    [om.next :as om :refer-macros [defui]]
    [sablono.core :refer-macros [html]]))
 
@@ -19,8 +20,13 @@
    :life-events
    [{:name "Milan trip!" :costs-per-year {0 2000}}
     {:name "Japan trip!" :costs-per-year {0 1000 1 3000}}]
-   ;; temporary, TODO(stijlist): reset to nil
-   :pending-event {}})
+   :pending-event nil})
+
+(s/def ::pending-event (s/or :none nil? :some ::pending-life-event))
+(s/def ::pending-life-event
+  (s/keys :req-un [::pending-name] :opt-un [::costs-per-year]))
+(s/def ::costs-per-year ::integer-keys)
+(s/def ::integer-keys #(every? integer? (keys %)))
 
 (defn multimap [kvs]
   (let [assoc-val-as-set 
