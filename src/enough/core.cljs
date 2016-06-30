@@ -14,19 +14,18 @@
 
 (def init-data
   {:parameters 
-   [{:name "Salary" :value 100000 :editing? false}
-    {:name "Expenses" :value 80000 :editing? false}
+   [{:name "Salary" :value 40000 :editing? false}
+    {:name "Expenses" :value 30000 :editing? false}
     {:name "Rate of return" :value 0.1 :editing? false}]
    :life-events
-   [{:name "Milan trip!" :costs-per-year {0 2000}}
-    {:name "Japan trip!" :costs-per-year {0 1000 1 3000}}]
+   [{:name "L.A. trip!" :costs-per-year {0 2000}}
+    {:name "Buy that Miata!" :costs-per-year {3 5000}}]
    :pending-event nil})
 
 (s/def ::pending-event (s/or :none nil? :some ::pending-life-event))
 (s/def ::pending-life-event
   (s/keys :req-un [::pending-name] :opt-un [::costs-per-year]))
-(s/def ::costs-per-year ::integer-keys)
-(s/def ::integer-keys #(every? integer? (keys %)))
+(s/def ::costs-per-year #(every? integer? (keys %)))
 
 (defn multimap [kvs]
   (let [assoc-val-as-set 
