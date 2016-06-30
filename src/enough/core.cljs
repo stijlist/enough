@@ -153,6 +153,10 @@
              "(Collapse summary)"])]
            (if expanded? (render-costs-per-year costs-per-year))]))))
 
+(defn track-in [component k]
+  (fn [e]
+    (om/update-state! component merge {k (.. e -target -value)})))
+
 (defui Parameter
   static om/Ident
   (ident [this {:keys [name]}]
@@ -174,8 +178,7 @@
             [:input 
              {:type "text" 
               :value (or field-value value)
-              :onChange #(let [new (.. % -target -value)] 
-                           (om/set-state! this {:field-value new}))}]
+              :onChange (track-in this :field-value)}]
             [:button 
              {:onClick 
               (fn [e]
@@ -187,10 +190,6 @@
                          :editing? false}) 
                       :chart-values])))}
               "Save"]])]))))
-
-(defn track-in [component k]
-  (fn [e]
-    (om/update-state! component merge {k (.. e -target -value)})))
 
 (defui PendingLifeEvent
   static om/IQuery
