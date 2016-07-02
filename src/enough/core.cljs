@@ -12,6 +12,15 @@
 (def ident->chart-key
   {"Salary" :salary "Expenses" :expenses "Rate of return" :rate-of-return})
 
+(s/def ::pending-life-event (s/or :none nil? :some ::life-event))
+(s/def ::life-event
+  (s/keys :req-un [::name ::costs-per-year]))
+(s/def ::name string?)
+(s/def ::costs-per-year #(every? number? (keys %)))
+(s/def ::ident (s/tuple keyword? #(not (coll? %))))
+(s/def ::life-events (s/coll-of ::ident []))
+(s/def ::app-state (s/keys :req-un [::pending-event ::life-events]))
+
 (def init-data
   {:parameters 
    [{:name "Salary" :value 40000 :editing? false}
@@ -38,7 +47,7 @@
 
 (defn get-normalized-toplevel-key [state key]
   (let [s @state]
-    (into [] (map #(get-in s %) (get s key)))))
+    (into [] (map #(get-in s %)) (get s key))))
 
 (defmethod read :parameters
   [{:keys [state]} key params]
@@ -79,15 +88,6 @@
           (s/explain spec state')
           state)))))
 
-(s/def ::pending-life-event (s/or :none nil? :some ::life-event))
-(s/def ::life-event
-  (s/keys :req-un [::name ::costs-per-year]))
-(s/def ::name string?)
-(s/def ::costs-per-year #(every? number? (keys %)))
-(s/def ::ident (s/tuple keyword? #(not (coll? %))))
-(s/def ::life-events (s/coll-of ::ident []))
-(s/def ::app-state (s/keys :req-un [::pending-event ::life-events]))
-
 (defmethod mutate 'events/create-pending
   [{:keys [state]} key params]
   {:action
@@ -112,7 +112,7 @@
      (if pending-name
        (swap! state (validate ::app-state update-in) [:pending-event] merge {:name pending-name})))})
 
-(defmethod mutate 'event/save
+(defmethod mutate 'events/save-pending
   [{:keys [state]} key {:keys [ident data]}]
   (let [add-life-event #(-> %
                           (assoc-in ident data)
@@ -269,7 +269,7 @@
             [:button 
              {:onClick 
               #(when pending
-                (om/transact! this `[(event/save {:ident [:life-events/by-name ~(:name pending)] :data ~pending}) :life-events :chart-values :pending-event]))}
+                (om/transact! this `[(events/save-pending {:ident [:life-events/by-name ~(:name pending)] :data ~pending}) :life-events :chart-values :pending-event]))}
              "Done"]]])))))
 
 (def parameter (om/factory Parameter {:keyfn :name}))
