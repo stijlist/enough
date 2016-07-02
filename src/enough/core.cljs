@@ -68,14 +68,7 @@
 
 (defmulti mutate om/dispatch)
 
-(defmethod mutate 'parameters/update
-  [{:keys [state]} key {:keys [name] :as params}]
-  {:pre [(string? name)]}
-  {:action
-   (fn []
-     (swap! state update-in [:parameters/by-name name] (fn [old] (merge old params))))})
-
-(defn validate [spec f]
+(defn apply-if-valid [spec f]
   (fn [state & args]
     (let [state' (apply f state args)]
       (if (s/valid? spec state') 
@@ -85,11 +78,18 @@
           (s/explain spec state')
           state)))))
 
+(defmethod mutate 'parameters/update
+  [{:keys [state]} key {:keys [name] :as params}]
+  {:pre [(string? name)]}
+  {:action
+   (fn []
+     (swap! state (apply-if-valid ::app-state update-in) [:parameters/by-name name] (fn [old] (merge old params))))})
+
 (defmethod mutate 'events/create-pending
   [{:keys [state]} key params]
   {:action
    (fn []
-     (swap! state (validate ::app-state assoc) :pending-event {:name "" :costs-per-year {}}))})
+     (swap! state (apply-if-valid ::app-state assoc) :pending-event {:name "" :costs-per-year {}}))})
 
 (defmethod mutate 'event/update-pending-costs
   [{:keys [state]} key {:keys [pending-index pending-cost]}]
@@ -100,13 +100,13 @@
         new-costs (assoc costs pending-index pending-cost)]
     {:action 
      (fn []
-       (swap! state (validate ::app-state update-in) [:pending-event] merge {:costs-per-year new-costs }))}))
+       (swap! state (apply-if-valid ::app-state update-in) [:pending-event] merge {:costs-per-year new-costs}))}))
 
 (defmethod mutate 'event/update-pending-name
   [{:keys [state]} key {:keys [pending-name] :as params}]
   {:action 
    (fn []
-     (swap! state (validate ::app-state update-in) [:pending-event] merge {:name pending-name}))})
+     (swap! state (apply-if-valid ::app-state update-in) [:pending-event] merge {:name pending-name}))})
 
 (defmethod mutate 'events/save-pending
   [{:keys [state]} key params]
@@ -118,7 +118,7 @@
                           (assoc :pending-event nil))]
     {:action
      (fn []
-       (swap! state (validate ::app-state add-life-event)))}))
+       (swap! state (apply-if-valid ::app-state add-life-event)))}))
 
 (defui Chart
   Object
