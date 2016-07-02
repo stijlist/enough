@@ -15,3 +15,11 @@ Provide more powerful event specifications.
 Increase the granularity of the simulation from years to months.
 
 Come up with a strategy for optionally re-scaling the chart when updates to parameters make it too large or small to read.
+
+Todos:
+
+Use db->tree instead of get-normalized-toplevel-key.
+
+Set up a devcards harness so we can test the UI from particular init states.
+
+Set up a clojure.test suite for reads, mutations, and chart calculations.

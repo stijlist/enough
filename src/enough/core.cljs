@@ -45,25 +45,24 @@
 
 (defmulti read om/dispatch)
 
-(defn get-normalized-toplevel-key [state key]
-  (let [s @state]
-    (into [] (map #(get-in s %)) (get s key))))
-
 (defmethod read :parameters
-  [{:keys [state]} key params]
-  {:value (get-normalized-toplevel-key state key)})
+  [{:keys [state query]} key params]
+  (let [s @state]
+    {:value (om/db->tree query (get s key) s)}))
 
 (defmethod read :chart-values
   [{:keys [state]} key params]
-  {:value 
-   (assoc 
-     (into {} (map (juxt :name :value)) (get-normalized-toplevel-key state :parameters))
-     :year->life-events
-     (life-events-by-year (get-normalized-toplevel-key state :life-events)))})
+  (let [s @state]
+    {:value
+     (assoc 
+       (into {} (map (juxt :name :value)) (om/db->tree '[*] (get s :parameters) s))
+       :year->life-events
+       (life-events-by-year (om/db->tree '[*] (get s :life-events) s)))}))
 
 (defmethod read :life-events
-  [{:keys [state]} key params]
-  {:value (get-normalized-toplevel-key state key)})
+  [{:keys [query state]} key params]
+  (let [s @state]
+    {:value (om/db->tree query (get s key) s)}))
 
 (defmethod read :pending-event
   [{:keys [state]} key params]
