@@ -85,7 +85,7 @@
 (s/def ::name string?)
 (s/def ::costs-per-year #(every? number? (keys %)))
 (s/def ::ident (s/tuple keyword? #(not (coll? %))))
-#_(s/def ::life-events (s/coll-of (s/or ::life-event ::ident) []))
+(s/def ::life-events (s/coll-of ::ident []))
 (s/def ::app-state (s/keys :req-un [::pending-event ::life-events]))
 
 (defmethod mutate 'events/create-pending
