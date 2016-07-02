@@ -79,12 +79,14 @@
           (s/explain spec state')
           state)))))
 
-(s/def ::pending-event (s/or :none nil? :some ::pending-life-event))
-(s/def ::pending-life-event
+(s/def ::pending-life-event (s/or :none nil? :some ::life-event))
+(s/def ::life-event
   (s/keys :req-un [::name ::costs-per-year]))
+(s/def ::name string?)
 (s/def ::costs-per-year #(every? number? (keys %)))
-
-(s/def ::app-state (s/keys :req-un [::pending-event]))
+(s/def ::ident (s/tuple keyword? #(not (coll? %))))
+#_(s/def ::life-events (s/coll-of (s/or ::life-event ::ident) []))
+(s/def ::app-state (s/keys :req-un [::pending-event ::life-events]))
 
 (defmethod mutate 'events/create-pending
   [{:keys [state]} key params]
@@ -111,11 +113,14 @@
        (swap! state (validate ::app-state update-in) [:pending-event] merge {:name pending-name})))})
 
 (defmethod mutate 'event/save
-  [{:keys [state]} key params]
-  {:action
-   (fn []
-     (swap! state (validate ::app-state update) :life-events conj params)
-     (swap! state (validate ::app-state update) :pending-life-event nil))})
+  [{:keys [state]} key {:keys [ident data]}]
+  (let [add-life-event #(-> %
+                          (assoc-in ident data)
+                          (update :life-events conj ident)
+                          (assoc :pending-event nil))]
+    {:action
+     (fn []
+       (swap! state (validate ::app-state add-life-event)))}))
 
 (defui Chart
   Object
@@ -263,8 +268,8 @@
              "Add another cost"]
             [:button 
              {:onClick 
-              #(if pending
-                (om/transact! this `[(event/save ~pending) :life-events :chart-values]))}
+              #(when pending
+                (om/transact! this `[(event/save {:ident [:life-events/by-name ~(:name pending)] :data ~pending}) :life-events :chart-values :pending-event]))}
              "Done"]]])))))
 
 (def parameter (om/factory Parameter {:keyfn :name}))
