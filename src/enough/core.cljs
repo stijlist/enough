@@ -211,7 +211,7 @@
     [:pending-event])
   Object
   (render [this]
-    (let [{:keys [name costs-per-year] :as pending} (om/props this)
+    (let [{:keys [name costs-per-year] :as pending} (:pending-event (om/props this))
           creating? (not (nil? pending))
           {:keys [pending-name pending-cost pending-index]} (om/get-state this)]
       (html
@@ -223,6 +223,8 @@
            [:div
             [:label "Event name:"]
             [:input {:value (or pending-name "") :type "text" :onChange (track-in this :pending-name)}]]
+           (when (not (empty? costs-per-year))
+             [:div (map (fn [[year cost]] [:li (str "$" cost " in year " year)]) costs-per-year)])
            [:div
             [:label "Cost of event:"]
             [:input {:value (or pending-cost "") :type "text" :onChange (track-in this :pending-cost)}]]
