@@ -113,9 +113,11 @@
        (swap! state (validate ::app-state update-in) [:pending-event] merge {:name pending-name})))})
 
 (defmethod mutate 'events/save-pending
-  [{:keys [state]} key {:keys [ident data]}]
-  (let [add-life-event #(-> %
-                          (assoc-in ident data)
+  [{:keys [state]} key params]
+  (let [pending (:pending-event @state)
+        ident [:life-events/by-name (:name pending)]
+        add-life-event #(-> %
+                          (assoc-in ident pending)
                           (update :life-events conj ident)
                           (assoc :pending-event nil))]
     {:action
@@ -269,7 +271,7 @@
             [:button 
              {:onClick 
               #(when pending
-                (om/transact! this `[(events/save-pending {:ident [:life-events/by-name ~(:name pending)] :data ~pending}) :life-events :chart-values :pending-event]))}
+                (om/transact! this `[(events/save-pending) :life-events :chart-values :pending-event]))}
              "Done"]]])))))
 
 (def parameter (om/factory Parameter {:keyfn :name}))
