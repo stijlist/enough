@@ -130,7 +130,7 @@
       (set/rename-keys ident->chart-key)
       (assoc :cutoff 65)
       (chart/years-til-retirement)
-      (chart/bar-chart {:width 400 :height 500}))))
+      (chart/bar-chart {:width 400 :height 300}))))
 
 (defn coerce-to-type-of [orig v]
   (condp = (type orig)

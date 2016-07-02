@@ -77,7 +77,7 @@
   (let [balances (map :balance data) 
         expenses (map (juxt :balance :expenses :additional-expenses) data)
         income-growth (map (juxt :balance :income-growth) data)
-        true-height 500
+        true-height 300
         bar-width 40
         chart-opts
         {:true-height true-height
@@ -85,7 +85,7 @@
          :bar-width bar-width
          :text-offsets {:x (+ 7 (/ bar-width 2)) :y (- true-height 3) :dy "0.15em"}}]
     (html
-      [:div {:style {:overflow "scroll" :max-width "100%" }}
+      [:div {:style {:overflow "scroll" :max-width "100%" :max-height (str height "px")}}
         [:svg 
          {:class "chart" 
           :height (str true-height "px") 
