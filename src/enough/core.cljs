@@ -45,7 +45,7 @@
 
 (defmulti read om/dispatch)
 
-(defmethod read :parameters
+(defmethod read :default
   [{:keys [state query]} key params]
   (let [s @state]
     {:value (om/db->tree query (get s key) s)}))
@@ -61,11 +61,6 @@
                        :year->life-events 
                        (life-events-by-year life-events))]
     {:value chart-values}))
-
-(defmethod read :life-events
-  [{:keys [query state]} key params]
-  (let [s @state]
-    {:value (om/db->tree query (get s key) s)}))
 
 (defmethod read :pending-event
   [{:keys [state]} key params]
