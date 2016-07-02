@@ -22,11 +22,6 @@
     {:name "Buy that Miata!" :costs-per-year {3 5000}}]
    :pending-event nil})
 
-(s/def ::pending-event (s/or :none nil? :some ::pending-life-event))
-(s/def ::pending-life-event
-  (s/keys :req-un [::pending-name] :opt-un [::costs-per-year]))
-(s/def ::costs-per-year #(every? integer? (keys %)))
-
 (defn multimap [kvs]
   (let [assoc-val-as-set 
         (fn [m [k v]]
@@ -74,20 +69,39 @@
    (fn []
      (swap! state update-in [:parameters/by-name name] (fn [old] (merge old params))))})
 
+(defn validate [spec f]
+  (fn [state & args]
+    (let [state' (apply f state args)]
+      (if (s/valid? spec state') 
+        state'
+        (do
+          (println "Backing out transaction due to spec failure:")
+          (s/explain spec state')
+          state)))))
+
+(s/def ::pending-event (s/or :none nil? :some ::pending-life-event))
+(s/def ::pending-life-event
+  (s/keys :req-un [::name ::costs-per-year]))
+(s/def ::costs-per-year #(every? number? (keys %)))
+
+(s/def ::app-state (s/keys :req-un [::pending-event]))
+
 (defmethod mutate 'events/create-pending
   [{:keys [state]} key params]
   {:action
    (fn []
-     (swap! state assoc :pending-event {}))})
+     (swap! state (validate ::app-state assoc) :pending-event {:name "" :costs-per-year {}}))})
 
 (defmethod mutate 'event/update-pending
   [{:keys [state]} key {:keys [pending-index pending-cost]}]
+  {:pre [(not (nil? pending-cost))
+         (not (nil? pending-index))]}
   (let [ev (:pending-event state)
         costs (:costs-per-year ev)
         new-costs (assoc costs pending-index pending-cost)]
     {:action 
      (fn []
-       (swap! state update-in [:pending-event :costs-per-year] merge {:costs-per-year new-costs}))}))
+       (swap! state (validate ::app-state update-in) [:pending-event] merge {:costs-per-year new-costs}))}))
 
 (defmethod mutate 'events/save
   [{:keys [state]} key params]
@@ -116,7 +130,7 @@
     (fn [[year cost]]
       [:li (str "$" cost " " year " years from now")])
     costs-per-year))
-        
+
 (defui LifeEvent
   static om/Ident
   (ident [this {:keys [name]}]
@@ -218,20 +232,18 @@
             [:button 
              {:onClick 
               #(if (and pending-cost pending-index)
+                (let [pc (js/Number pending-cost)
+                      pi (js/Number pending-index)]
                 (do
                   (om/transact! this 
-                    `[(event/update-pending {:cost ~pending-cost :cost-index ~pending-index})])
-                  (om/update-state! this dissoc :pending-cost :pending-index)
-                  ))}
+                    `[(event/update-pending {:pending-cost ~pc :pending-index ~pi})])
+                  (om/update-state! this dissoc :pending-cost :pending-index))))}
              "Add another cost"]
             [:button 
              {:onClick 
               #(if pending
                 (om/transact! this `[(event/save ~pending)]))}
-             "Done"]]]))
-    )
-  )
-)
+             "Done"]]])))))
 
 (def parameter (om/factory Parameter {:keyfn :name}))
 (def chart (om/factory Chart))
