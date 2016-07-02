@@ -106,8 +106,7 @@
   [{:keys [state]} key {:keys [pending-name] :as params}]
   {:action 
    (fn []
-     (if pending-name
-       (swap! state (validate ::app-state update-in) [:pending-event] merge {:name pending-name})))})
+     (swap! state (validate ::app-state update-in) [:pending-event] merge {:name pending-name}))})
 
 (defmethod mutate 'events/save-pending
   [{:keys [state]} key params]
