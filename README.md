@@ -18,8 +18,6 @@ Come up with a strategy for optionally re-scaling the chart when updates to para
 
 Todos:
 
-Use db->tree instead of get-normalized-toplevel-key.
-
 Set up a devcards harness so we can test the UI from particular init states.
 
 Set up a clojure.test suite for reads, mutations, and chart calculations.
