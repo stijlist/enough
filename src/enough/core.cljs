@@ -52,12 +52,15 @@
 
 (defmethod read :chart-values
   [{:keys [state]} key params]
-  (let [s @state]
-    {:value
-     (assoc 
-       (into {} (map (juxt :name :value)) (om/db->tree '[*] (get s :parameters) s))
-       :year->life-events
-       (life-events-by-year (om/db->tree '[*] (get s :life-events) s)))}))
+  (let [s @state
+        parameters (om/db->tree '[*] (get s :parameters) s)
+        life-events (om/db->tree '[*] (get s :life-events) s)
+        pname->pvalue (into {} (map (juxt :name :value)) parameters)
+        chart-values (assoc 
+                       pname->pvalue 
+                       :year->life-events 
+                       (life-events-by-year life-events))]
+    {:value chart-values}))
 
 (defmethod read :life-events
   [{:keys [query state]} key params]
