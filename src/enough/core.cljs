@@ -92,7 +92,7 @@
    (fn []
      (swap! state (validate ::app-state assoc) :pending-event {:name "" :costs-per-year {}}))})
 
-(defmethod mutate 'event/update-pending
+(defmethod mutate 'event/update-pending-costs
   [{:keys [state]} key {:keys [pending-index pending-cost]}]
   {:pre [(not (nil? pending-cost))
          (not (nil? pending-index))]}
@@ -101,14 +101,21 @@
         new-costs (assoc costs pending-index pending-cost)]
     {:action 
      (fn []
-       (swap! state (validate ::app-state update-in) [:pending-event] merge {:costs-per-year new-costs}))}))
+       (swap! state (validate ::app-state update-in) [:pending-event] merge {:costs-per-year new-costs }))}))
 
-(defmethod mutate 'events/save
+(defmethod mutate 'event/update-pending-name
+  [{:keys [state]} key {:keys [pending-name] :as params}]
+  {:action 
+   (fn []
+     (if pending-name
+       (swap! state (validate ::app-state update-in) [:pending-event] merge {:name pending-name})))})
+
+(defmethod mutate 'event/save
   [{:keys [state]} key params]
-  (let [pending (:pending-event state)]
-    {:action
-     (fn []
-       (swap! state update-in :life-events conj pending))}))
+  {:action
+   (fn []
+     (swap! state (validate ::app-state update) :life-events conj params)
+     (swap! state (validate ::app-state update) :pending-life-event nil))})
 
 (defui Chart
   Object
@@ -213,7 +220,7 @@
   (render [this]
     (let [{:keys [name costs-per-year] :as pending} (:pending-event (om/props this))
           creating? (not (nil? pending))
-          {:keys [pending-name pending-cost pending-index]} (om/get-state this)]
+          {:keys [editing-name pending-cost pending-index]} (om/get-state this)]
       (html
         (if (not creating?)
           [:button 
@@ -222,7 +229,20 @@
           [:div
            [:div
             [:label "Event name:"]
-            [:input {:value (or pending-name "") :type "text" :onChange (track-in this :pending-name)}]]
+            (if editing-name
+              [:span [:input {:value (or editing-name "") :type "text" :onChange (track-in this :editing-name)}]
+               [:button 
+                {:onClick 
+                 (fn [] 
+                   (om/transact! this `[(event/update-pending-name {:pending-name ~editing-name})])
+                   (om/update-state! this dissoc :editing-name))}
+                 "Save"]]
+
+               [:span 
+                (:name pending)
+                [:button 
+                 {:onClick #(om/update-state! this assoc :editing-name "")} 
+                "Edit"]])]
            (when (not (empty? costs-per-year))
              [:div (map (fn [[year cost]] [:li (str "$" cost " in year " year)]) costs-per-year)])
            [:div
@@ -238,13 +258,13 @@
                       pi (js/Number pending-index)]
                 (do
                   (om/transact! this 
-                    `[(event/update-pending {:pending-cost ~pc :pending-index ~pi})])
+                    `[(event/update-pending-costs {:pending-cost ~pc :pending-index ~pi})])
                   (om/update-state! this dissoc :pending-cost :pending-index))))}
              "Add another cost"]
             [:button 
              {:onClick 
               #(if pending
-                (om/transact! this `[(event/save ~pending)]))}
+                (om/transact! this `[(event/save ~pending) :life-events :chart-values]))}
              "Done"]]])))))
 
 (def parameter (om/factory Parameter {:keyfn :name}))
@@ -259,8 +279,7 @@
       `[{:parameters ~pquery} :chart-values {:life-events ~lquery} :pending-event]))
   Object
   (render [this]
-    (let [{:keys [parameters chart-values life-events pending-event] :as props} (om/props this)
-          ]
+    (let [{:keys [parameters chart-values life-events pending-event] :as props} (om/props this)]
       (html 
         [:div
          [:div (map parameter parameters)]
