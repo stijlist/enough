@@ -9,9 +9,6 @@
 
 (enable-console-print!)
 
-(def ident->chart-key
-  {"Salary" :salary "Expenses" :expenses "Rate of return" :rate-of-return})
-
 (s/def ::pending-life-event (s/or :none nil? :some ::life-event))
 (s/def ::life-event
   (s/keys :req-un [::name ::costs-per-year]))
@@ -31,18 +28,6 @@
     {:name "Buy that Miata!" :costs-per-year {3 5000}}]
    :pending-event nil})
 
-(defn multimap [kvs]
-  (let [assoc-val-as-set 
-        (fn [m [k v]]
-          (if (contains? m k) 
-            (assoc m k (conj (get m k) v))
-            (assoc m k #{v})))]
-    (reduce assoc-val-as-set {} kvs)))
-
-(defn life-events-by-year [life-events]
-  (let [get-year-ev-pairs (fn [e] (for [k (-> e :costs-per-year keys)] [k e]))]
-    (multimap (mapcat get-year-ev-pairs life-events))))
-
 (defmulti read om/dispatch)
 
 (defmethod read :default
@@ -50,16 +35,18 @@
   (let [s @state]
     {:value (om/db->tree query (get s key) s)}))
 
+(def ident->chart-key
+  {"Salary" :salary "Expenses" :expenses "Rate of return" :rate-of-return})
+
 (defmethod read :chart-values
   [{:keys [state]} key params]
   (let [s @state
         parameters (om/db->tree '[*] (get s :parameters) s)
         life-events (om/db->tree '[*] (get s :life-events) s)
         pname->pvalue (into {} (map (juxt :name :value)) parameters)
-        chart-values (assoc 
-                       pname->pvalue 
-                       :year->life-events 
-                       (life-events-by-year life-events))]
+        chart-values (-> pname->pvalue 
+                       (set/rename-keys ident->chart-key)
+                       (merge {:life-events life-events :cutoff 65}))]
     {:value chart-values}))
 
 (defmethod read :pending-event
@@ -125,8 +112,6 @@
   (render [this]
     (prn "re-render Chart" (-> this om/props))
     (-> (om/props this) 
-      (set/rename-keys ident->chart-key)
-      (assoc :cutoff 65)
       (chart/years-til-retirement)
       (chart/bar-chart {:width 400 :height 300}))))
 
