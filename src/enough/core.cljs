@@ -113,7 +113,7 @@
     (prn "re-render Chart" (-> this om/props))
     (-> (om/props this) 
       (chart/years-til-retirement)
-      (chart/bar-chart {:width 400 :height 300}))))
+      (chart/savings-chart {:width 400 :height 300}))))
 
 (defn coerce-to-type-of [orig v]
   (condp = (type orig)

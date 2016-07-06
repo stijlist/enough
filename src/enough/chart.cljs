@@ -86,7 +86,7 @@
      (when (> (y-scale d) 10)
        [:text text-offsets (thousands->k d)])]))
 
-(defn bar-chart [data {:keys [width height]}]
+(defn savings-chart [data {:keys [width height]}]
   (let [balances (map :balance data) 
         expenses (map (juxt :balance :expenses :additional-expenses) data)
         income-growth (map (juxt :balance :income-growth) data)
