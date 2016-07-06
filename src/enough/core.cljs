@@ -38,16 +38,16 @@
 (def ident->chart-key
   {"Salary" :salary "Expenses" :expenses "Rate of return" :rate-of-return})
 
-(defmethod read :chart-values
+(defmethod read :chart
   [{:keys [state]} key params]
   (let [s @state
         parameters (om/db->tree '[*] (get s :parameters) s)
         life-events (om/db->tree '[*] (get s :life-events) s)
         pname->pvalue (into {} (map (juxt :name :value)) parameters)
-        chart-values (-> pname->pvalue 
-                       (set/rename-keys ident->chart-key)
-                       (merge {:life-events life-events :cutoff 65}))]
-    {:value chart-values}))
+        chart (-> pname->pvalue 
+                (set/rename-keys ident->chart-key)
+                (merge {:life-events life-events :cutoff 65}))]
+    {:value chart}))
 
 (defmethod read :pending-event
   [{:keys [state]} key params]
@@ -197,7 +197,7 @@
                         {:name ~name 
                          :value ~new-value 
                          :editing? false}) 
-                      :chart-values])))}
+                      :chart])))}
               "Save"]])]))))
 
 (defui PendingLifeEvent
@@ -252,11 +252,11 @@
             [:button 
              {:onClick 
               #(when pending
-                (om/transact! this `[(events/save-pending) :life-events :chart-values :pending-event]))}
+                (om/transact! this `[(events/save-pending) :life-events :chart :pending-event]))}
              "Done"]]])))))
 
 (def parameter (om/factory Parameter {:keyfn :name}))
-(def chart (om/factory Chart))
+(def render-chart (om/factory Chart))
 (def life-event (om/factory LifeEvent {:keyfn :name}))
 (def life-event-pending (om/factory PendingLifeEvent))
 
@@ -264,17 +264,17 @@
   static om/IQuery
   (query [this]
     (let [pquery (om/get-query Parameter) lquery (om/get-query LifeEvent)]
-      `[{:parameters ~pquery} :chart-values {:life-events ~lquery} :pending-event]))
+      `[{:parameters ~pquery} :chart {:life-events ~lquery} :pending-event]))
   Object
   (render [this]
-    (let [{:keys [parameters chart-values life-events pending-event] :as props} (om/props this)]
+    (let [{:keys [parameters chart life-events pending-event] :as props} (om/props this)]
       (html 
         [:div
          [:div (map parameter parameters)]
          [:div
            (map life-event life-events)
            (life-event-pending pending-event)]
-         (chart chart-values)]))))
+         (render-chart chart)]))))
 
 (def parser (om/parser {:read read :mutate mutate}))
 (def reconciler (om/reconciler {:state init-data :parser parser}))
