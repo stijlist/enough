@@ -1,7 +1,7 @@
 # enough
 a financial journal
 
-![current state](https://raw.githubusercontent.com/stijlist/enough/master/screenshots/enough%5C%20-%5C%20Screen%5C%20Shot%5C%202016-07-05%5C%20at%5C%206.34.11%5C%20AM.png)
+![current state](https://raw.githubusercontent.com/stijlist/enough/master/screenshots/enough-2016-07-05.png)
 
 
 Ideas:
