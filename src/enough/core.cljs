@@ -128,7 +128,7 @@
 (defn render-costs-per-year [costs-per-year]
   (map 
     (fn [[year cost]]
-      [:li (str "$" cost " " year " years from now")])
+      [:li {:key year} (str "$" cost " " year " years from now")])
     costs-per-year))
 
 (defui ^:once LifeEvent
@@ -237,7 +237,7 @@
                  {:onClick #(om/update-state! this assoc :editing-name "")} 
                 "Edit"]])]
            (when (not (empty? costs-per-year))
-             [:div (map (fn [[year cost]] [:li (str "$" cost " in year " year)]) costs-per-year)])
+             [:div (render-costs-per-year costs-per-year)])
            [:div
             [:label "Cost of event:"]
             [:input {:value (or pending-cost "") :type "text" :onChange (track-in this :pending-cost)}]]
