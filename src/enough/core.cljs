@@ -130,7 +130,7 @@
       [:li {:key year} (str "$" cost " " year " years from now")])
     costs-per-year))
 
-(defui ^:once LifeEvent
+(defui LifeEvent
   static om/Ident
   (ident [this {:keys [name]}]
     [:life-events/by-name name])
@@ -153,13 +153,13 @@
               (fn [e] 
                 (.preventDefault e)
                 (om/set-state! this {:expanded? true}))}
-             "See summary"]
+             "Summary"]
             [:button
              {:onClick
               (fn [e]
                 (.preventDefault e)
                 (om/set-state! this {:expanded? false}))}
-             "Collapse summary"])]
+             "Collapse"])]
            (if expanded? (render-costs-per-year costs-per-year))]))))
 
 (defn track-in [component k]
