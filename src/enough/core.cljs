@@ -24,7 +24,7 @@
     {:name "Expenses" :value 30000 :editing? false}
     {:name "Rate of return" :value 0.1 :editing? false}]
    :life-events
-   [{:name "L.A. trip!" :costs-per-year {0 2000}}
+   [{:name "Moving!" :costs-per-year {0 2000 1 2000}}
     {:name "Buy that Miata!" :costs-per-year {3 5000}}]
    :pending-event nil})
 
@@ -87,8 +87,7 @@
   [{:keys [state]} key {:keys [pending-index pending-cost]}]
   {:pre [(not (nil? pending-cost))
          (not (nil? pending-index))]}
-  (let [ev (:pending-event state)
-        costs (:costs-per-year ev)
+  (let [costs (get-in @state [:pending-event :costs-per-year])
         new-costs (assoc costs pending-index pending-cost)]
     {:action 
      (fn []
@@ -149,22 +148,18 @@
          [:div
           (str name " $" total-cost " total. ")
           (if (not expanded?)
-            [:a 
+            [:button
              {:onClick 
               (fn [e] 
                 (.preventDefault e)
-                (om/set-state! this {:expanded? true}))
-              :href "" 
-              :style {:font-size "small" :font-style "italic"}}
-             "(See summary)"]
-            [:a
+                (om/set-state! this {:expanded? true}))}
+             "See summary"]
+            [:button
              {:onClick
               (fn [e]
                 (.preventDefault e)
-                (om/set-state! this {:expanded? false}))
-              :href ""
-              :style {:font-size "small" :font-style "italic"}}
-             "(Collapse summary)"])]
+                (om/set-state! this {:expanded? false}))}
+             "Collapse summary"])]
            (if expanded? (render-costs-per-year costs-per-year))]))))
 
 (defn track-in [component k]
