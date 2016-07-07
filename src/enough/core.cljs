@@ -60,7 +60,7 @@
 
 (defmulti mutate om/dispatch)
 
-(defn apply-if-valid [spec f]
+(defn apply-if-valid [f spec]
   (fn [state & args]
     (let [state' (apply f state args)]
       (if (s/valid? spec state') 
@@ -75,13 +75,13 @@
   {:pre [(string? name)]}
   {:action
    (fn []
-     (swap! state (apply-if-valid ::app-state update-in) [:parameters/by-name name] (fn [old] (merge old params))))})
+     (swap! state (apply-if-valid update-in ::app-state) [:parameters/by-name name] (fn [old] (merge old params))))})
 
 (defmethod mutate 'events/create-pending
   [{:keys [state]} key params]
   {:action
    (fn []
-     (swap! state (apply-if-valid ::app-state assoc) :pending-event {:name "" :costs-per-year {}}))})
+     (swap! state (apply-if-valid assoc ::app-state) :pending-event {:name "" :costs-per-year {}}))})
 
 (defmethod mutate 'event/update-pending-costs
   [{:keys [state]} key {:keys [pending-index pending-cost]}]
@@ -91,13 +91,13 @@
         new-costs (assoc costs pending-index pending-cost)]
     {:action 
      (fn []
-       (swap! state (apply-if-valid ::app-state update-in) [:pending-event] merge {:costs-per-year new-costs}))}))
+       (swap! state (apply-if-valid update-in ::app-state) [:pending-event] merge {:costs-per-year new-costs}))}))
 
 (defmethod mutate 'event/update-pending-name
   [{:keys [state]} key {:keys [pending-name] :as params}]
   {:action 
    (fn []
-     (swap! state (apply-if-valid ::app-state update-in) [:pending-event] merge {:name pending-name}))})
+     (swap! state (apply-if-valid update-in ::app-state) [:pending-event] merge {:name pending-name}))})
 
 (defmethod mutate 'events/save-pending
   [{:keys [state]} key params]
@@ -109,7 +109,7 @@
                           (assoc :pending-event nil))]
     {:action
      (fn []
-       (swap! state (apply-if-valid ::app-state add-life-event)))}))
+       (swap! state (apply-if-valid add-life-event ::app-state)))}))
 
 (defui ^:once Chart
   Object
