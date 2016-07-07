@@ -30,7 +30,12 @@
 
 (defmulti read om/dispatch)
 
-(defmethod read :default
+(defmethod read :parameters
+  [{:keys [state query]} key params]
+  (let [s @state]
+    {:value (om/db->tree query (get s key) s)}))
+
+(defmethod read :life-events
   [{:keys [state query]} key params]
   (let [s @state]
     {:value (om/db->tree query (get s key) s)}))
@@ -277,6 +282,11 @@
          (render-chart chart)]))))
 
 (def parser (om/parser {:read read :mutate mutate}))
-(def reconciler (om/reconciler {:state init-data :parser parser}))
+(defonce reconciler (om/reconciler {:state init-data :parser parser}))
 
-(om/add-root! reconciler Root (dom/getElement "app"))
+(defonce root (atom nil))
+(defn reload []
+  (when (nil? @root)
+    (om/add-root! reconciler Root (dom/getElement "app"))
+    (reset! root Root)))
+(reload)

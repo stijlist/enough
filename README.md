@@ -18,6 +18,8 @@ Come up with a strategy for optionally re-scaling the chart when updates to para
 
 Todos:
 
+Try a "fix and continue" style workflow with anmonteiro's reloadable om checklist: https://anmonteiro.com/2016/01/writing-om-next-reloadable-code-a-checklist/.
+
 Set up a devcards harness so we can test the UI from particular init states.
 
 Set up a clojure.test suite for reads, mutations, and chart calculations.
