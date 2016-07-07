@@ -166,7 +166,7 @@
   (fn [e]
     (om/update-state! component merge {k (.. e -target -value)})))
 
-(defui ^:once Parameter
+(defui Parameter
   static om/Ident
   (ident [this {:keys [name]}]
     [:parameters/by-name name])
@@ -200,7 +200,7 @@
                       :chart])))}
               "Save"]])]))))
 
-(defui ^:once PendingLifeEvent
+(defui PendingLifeEvent
   static om/IQuery
   (query [this]
     [:pending-event])
@@ -260,7 +260,7 @@
 (def life-event (om/factory LifeEvent {:keyfn :name}))
 (def life-event-pending (om/factory PendingLifeEvent))
 
-(defui ^:once Root
+(defui Root
   static om/IQuery
   (query [this]
     (let [pquery (om/get-query Parameter) lquery (om/get-query LifeEvent)]
@@ -277,13 +277,6 @@
          (render-chart chart)]))))
 
 (def parser (om/parser {:read read :mutate mutate}))
-(defonce reconciler (om/reconciler {:state init-data :parser parser}))
+(def reconciler (om/reconciler {:state init-data :parser parser}))
 
-(defonce root (atom nil))
-(defn reload []
-  (if (nil? @root)
-    (do 
-      (om/add-root! reconciler Root (dom/getElement "app"))
-      (reset! root Root))
-    (.forceUpdate (om/class->any reconciler @root))))
-(reload)
+(om/add-root! reconciler Root (dom/getElement "app"))

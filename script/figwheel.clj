@@ -6,7 +6,7 @@
    :build-ids ["dev"]
    :all-builds
    [{:id "dev"
-     :figwheel {:on-jsload "enough.core/reload"}
+     :figwheel true
      :source-paths ["src"]
      :compiler {:main 'enough.core
                 :asset-path "js"
