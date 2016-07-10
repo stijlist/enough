@@ -1,5 +1,3 @@
-# enough
-a financial journal
 
 This is a minimal repro case for some strange behavior when
 using a destructuring form in `defprotocol` methods.
