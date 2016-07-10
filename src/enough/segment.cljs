@@ -14,7 +14,7 @@
   (stack [this s2]
     "Returns a segment with the height and width of s2 and :ty such that s2's
     bottom edge is aligned with this segment's top edge.")
-  (inset [this {:keys [top bottom]}]
+  (inset [this top-or-bottom]
     "Given a segment s2 provided as either :top or :bottom, return a segment
     with the dimensions of s2 whose top or bottom edge aligns with the
     corresponding top or bottom edge in s1."))
