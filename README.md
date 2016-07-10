@@ -9,9 +9,10 @@ In short,
     (defprotocol P
       (f [this {:keys [x]}]))
 
-    (defrecording R
-      (f [this m]
-        (prn "m:" m)))
+    (defrecord R []
+      P
+      (f [this m] m))
+    
     (f (R.) {:hello "world"}) ;; => {:keys [:hello]}
 
 We expect to get the same map as output as we gave as input, but
