@@ -25,6 +25,7 @@
     (assoc s2 :ty (- ty (:height s2))))
   (inset [this {:keys [top bottom]}]
     (assert (not (and top bottom)) "Can't supply both :top and :bottom to inset.")
+    (assert (or top bottom) "Must supply at least one of :top or :bottom to inset")
     (cond
       top
       (assoc top :ty ty)

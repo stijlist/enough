@@ -3,5 +3,4 @@
             enough.segment-test))
 
 (enable-console-print!)
-(prn "hello")
 (run-tests 'enough.segment-test)
