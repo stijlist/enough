@@ -18,6 +18,6 @@
         s2 (Segment. 2 1 0 0)
         top-inset (segment/inset s1 {:top s2})
         bottom-inset (segment/inset s1 {:bottom s2})]
-    (is (= (top-edge s1) (top-edge top-inset))
-        (= (bottom-edge s2) (bottom-edge bottom-inset)))))
+    (is (= (top-edge s1) (top-edge top-inset)))
+    (is (= (bottom-edge s1) (bottom-edge bottom-inset)))))
 
