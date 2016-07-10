@@ -10,8 +10,8 @@
 (deftest stacked-segments
   (let [s1 (Segment. 10 1 0 0)
         s2 (Segment. 2 1 0 0)
-        stacked-s2 (segment/stack s1 s2)]
-    (is (= (top-edge s1) (bottom-edge stacked-s2)))))
+        stacked-top (segment/stack s1 {:top s2})]
+    (is (= (top-edge s1) (bottom-edge stacked-top)))))
 
 (deftest inset-segments
   (let [s1 (Segment. 10 1 0 0)

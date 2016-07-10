@@ -1,6 +1,6 @@
 (ns enough.chart
   (:require [sablono.core :refer-macros [html]]
-            [enough.segment :as segment]))
+            [enough.segment :as segment :refer [Segment]]))
 
 (defn multimap [kvs]
   (let [assoc-val-as-set 
@@ -46,66 +46,39 @@
        offset (- range-start domain-start)]
    (fn [domain] (+ offset (* multiplier domain))))) 
 
-(defn translate [x y]
-  (str "translate(" x "," y ")"))
-
 (defn thousands->k [n]
   (str (int (/ n 1000)) "k"))
 
-(defn render-balance 
-  [{:keys [bar-width true-height y-scale text-offsets]}]
-  (fn [i d]
-    [:g {:transform (translate (* i bar-width) 0)}
-     [:rect 
-      {:fill "steelblue"
-       :y (- true-height (y-scale d)) 
-       :height (y-scale d) 
-       :width (dec bar-width)}]
-     [:text text-offsets (thousands->k d)]]))
+(def width 30)
 
-(defn render-expenses 
-  [{:keys [bar-width true-height y-scale text-offsets]}]
-  (fn [i [balance-offset expenses additional-expenses]]
-    (let [d (+ expenses additional-expenses)]
-      [:g {:transform 
-           (translate (* i bar-width) (- (y-scale balance-offset)))}
-       [:rect
-        {:fill "lightcoral"
-         :y (- true-height (y-scale d))
-         :height (y-scale d)
-         :width (dec bar-width)}]
-       [:text text-offsets (thousands->k d)]])))
-
-(defn render-income-growth
-  [{:keys [bar-width true-height y-scale text-offsets]}]
-  (fn [i [balance-offset d]]
-    [:g {:transform
-         (translate (* i bar-width) (- (- (y-scale balance-offset) (y-scale d))))}
-     [:rect 
-      {:fill "mediumaquamarine"
-       :y (- true-height (y-scale d))
-       :height (y-scale d)
-       :width (dec bar-width)}]
-     (when (> (y-scale d) 10)
-       [:text text-offsets (thousands->k d)])]))
+(defn render-year
+  [i [balance expenses growth] opts]
+  (let [seg #(Segment. % width (* i width) 0)
+        b (seg balance)
+        e (segment/inset b {:top (seg expenses)})
+        g (segment/stack e {:bottom (seg growth)})]
+    [(segment/svg b (assoc opts :fill "steelblue"))
+     (segment/svg e (assoc opts :fill "lightcoral"))
+     (segment/svg g (assoc opts :fill "aquamarine"))]))
 
 (defn savings-chart [data {:keys [width height]}]
   (let [balances (map :balance data) 
-        expenses (map (juxt :balance :expenses :additional-expenses) data)
-        income-growth (map (juxt :balance :income-growth) data)
+        expenses (map #(+ (:expenses %) (:additional-expenses %)) data)
+        growth (map :income-growth data)
         true-height 300
         bar-width 40
-        chart-opts
-        {:true-height true-height
-         :y-scale (linear-scale [0 1000000] [0 true-height])
-         :bar-width bar-width
-         :text-offsets {:x (+ 7 (/ bar-width 2)) :y (- true-height 3) :dy "0.15em"}}]
+        new-opts
+        {:container {:height width}
+         :width 40
+         :label-fn thousands->k
+         :scale (linear-scale [0 1000000] [0 300])
+         :text-opts {:x (+ 7 (/ bar-width 2)) :y (- true-height 3) :dy "0.15em"}}]
     (html
       [:div {:style {:overflow "scroll" :max-width "100%" :max-height (str height "px")}}
         [:svg 
          {:class "chart" 
           :height (str true-height "px") 
-          :width (str (* bar-width (count data)) "px")}
-         (map-indexed (render-balance chart-opts) balances)
-         (map-indexed (render-expenses chart-opts) expenses)
-         (map-indexed (render-income-growth chart-opts) income-growth)]])))
+          :width (str (* (:width new-opts) (count data)) "px")}
+          (map-indexed #(render-year %1 %2 new-opts) (map vector balances expenses growth))
+         
+         ]])))
