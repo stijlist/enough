@@ -77,7 +77,7 @@
   [{:keys [bar-width true-height y-scale text-offsets]}]
   (fn [i [balance-offset d]]
     [:g {:transform
-         (translate (* i bar-width) (- (- (y-scale balance-offset) (y-scale d))))}
+         (translate (* i bar-width) (- (y-scale d) (y-scale balance-offset)))}
      [:rect 
       {:fill "mediumaquamarine"
        :y (- true-height (y-scale d))
