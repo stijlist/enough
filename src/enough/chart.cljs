@@ -1,5 +1,6 @@
 (ns enough.chart
-  (:require [sablono.core :refer-macros [html]]))
+  (:require [sablono.core :refer-macros [html]]
+            [enough.segment :as segment]))
 
 (defn multimap [kvs]
   (let [assoc-val-as-set 
