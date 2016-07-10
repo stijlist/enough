@@ -25,7 +25,9 @@
       (let [balance (or (:balance (peek years)) 0)
             growth (* balance rate-of-return)
             year (count years)
-            cost-this-year (reduce + (map #(get (:costs-per-year %) year) (get year->life-events year)))
+            cost-this-year (->> (get year->life-events year)
+                             (map #(get-in % [:costs-per-year year]))
+                             (reduce +))
             new-balance (- (+ balance salary growth) (+ expenses cost-this-year))
             done? (or 
                     (>= year cutoff)
