@@ -5,7 +5,7 @@
 (s/def ::label (s/cat :type #{:text} :offsets (s/keys) :label string?))
 (s/def ::translated (s/keys :req-un [::transform]))
 
-(s/fdef segment-svg
+(s/fdef svg
   :args (s/cat :datum number? :translation ::translation)
   :ret (s/cat :type #{:g} :transform ::translated :rect ::rect :text ::label)
   :fn (constantly true))
@@ -26,5 +26,7 @@
   (inset [this {:keys [top bottom]}]
     (assert (not (and top bottom)) "Can't supply both :top and :bottom to inset.")
     (cond
-      top (assoc top :ty ty)
-      bottom (assoc bottom :ty (- (+ ty height) (:height bottom))))))
+      top
+      (assoc top :ty ty)
+      bottom
+      (assoc bottom :ty (- (+ ty height) (:height bottom))))))
