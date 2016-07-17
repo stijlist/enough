@@ -1,6 +1,7 @@
 (ns enough.chart
   (:require [sablono.core :refer-macros [html]]
-            [enough.segment :as segment]))
+            [enough.segment :as segment]
+            [om.next :as om]))
 
 (defn multimap [kvs]
   (let [assoc-val-as-set 
@@ -24,20 +25,22 @@
     (loop [years []]
       (let [balance (or (:balance (peek years)) 0)
             growth (* balance rate-of-return)
-            year (count years)
-            cost-this-year (->> (get year->life-events year)
-                             (map #(get-in % [:costs-per-year year]))
+            this-year (count years)
+            expense-breakdown (get year->life-events this-year)
+            cost-this-year (->> expense-breakdown
+                             (map #(get-in % [:costs-per-year this-year]))
                              (reduce +))
             new-balance (- (+ balance salary growth) (+ expenses cost-this-year))
             done? (or 
-                    (>= year cutoff)
+                    (>= this-year cutoff)
                     (>= growth expenses)
                     (< balance 0))
             next (conj years {:balance new-balance 
                               :expenses expenses 
                               :additional-expenses cost-this-year
                               :income-growth growth 
-                              :income salary})]
+                              :income salary
+                              :expense-breakdown expense-breakdown})]
         (if done? next (recur next))))))
 
 (defn linear-scale [[domain-start domain-end]
@@ -65,10 +68,13 @@
 
 (defn render-expenses 
   [{:keys [bar-width true-height y-scale text-offsets]}]
-  (fn [i [balance-offset expenses additional-expenses]]
+  (fn [i [balance-offset expenses additional-expenses expense-breakdown]]
     (let [d (+ expenses additional-expenses)]
+      ;; this doesn't work yet - need to turn this into an Om component
+      #_(prn "Mouseover?" (om/get-state this :mouseover))
       [:g {:transform 
-           (translate (* i bar-width) (- (y-scale balance-offset)))}
+           (translate (* i bar-width) (- (y-scale balance-offset)))
+           :onMouseOver #(prn expense-breakdown)}
        [:rect
         {:fill "lightcoral"
          :y (- true-height (y-scale d))
@@ -91,7 +97,7 @@
 
 (defn savings-chart [data {:keys [width height]}]
   (let [balances (map :balance data) 
-        expenses (map (juxt :balance :expenses :additional-expenses) data)
+        expenses (map (juxt :balance :expenses :additional-expenses :expense-breakdown) data)
         income-growth (map (juxt :balance :income-growth) data)
         true-height 300
         bar-width 40
