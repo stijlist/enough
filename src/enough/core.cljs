@@ -111,14 +111,6 @@
      (fn []
        (swap! state (apply-if-valid add-life-event ::app-state)))}))
 
-(defui ^:once Chart
-  Object
-  (render [this]
-    (prn "re-render Chart" (-> this om/props))
-    (-> (om/props this)
-      (chart/years-til-retirement)
-      (chart/savings-chart {:width 400 :height 300}))))
-
 (defn coerce-to-type-of [orig v]
   (condp = (type orig)
     js/Number (js/Number v)

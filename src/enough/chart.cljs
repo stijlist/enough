@@ -66,22 +66,6 @@
        :width (dec bar-width)}]
      [:text text-offsets (thousands->k d)]]))
 
-(defn render-expenses 
-  [{:keys [bar-width true-height y-scale text-offsets]}]
-  (fn [i [balance-offset expenses additional-expenses expense-breakdown]]
-    (let [d (+ expenses additional-expenses)]
-      ;; this doesn't work yet - need to turn this into an Om component
-      #_(prn "Mouseover?" (om/get-state this :mouseover))
-      [:g {:transform 
-           (translate (* i bar-width) (- (y-scale balance-offset)))
-           :onMouseOver #(prn expense-breakdown)}
-       [:rect
-        {:fill "lightcoral"
-         :y (- true-height (y-scale d))
-         :height (y-scale d)
-         :width (dec bar-width)}]
-       [:text text-offsets (thousands->k d)]])))
-
 (defn render-income-growth
   [{:keys [bar-width true-height y-scale text-offsets]}]
   (fn [i [balance-offset d]]
@@ -114,12 +98,11 @@
            :width (dec bar-width)}]
          [:text text-offsets (thousands->k d)]]))))
 
-(def render-expenses2 (om/factory ExpensesSegment {:keyfn :i}))
+(def render-expenses (om/factory ExpensesSegment {:keyfn :i}))
 
 (defn savings-chart [data {:keys [width height]}]
   (let [balances (map :balance data) 
-        expenses (map (juxt :balance :expenses :additional-expenses :expense-breakdown) data)
-        expenses2 (map #(select-keys % [:balance :expenses :additional-expenses :expense-breakdown]) data)
+        expenses (map #(select-keys % [:balance :expenses :additional-expenses :expense-breakdown]) data)
         income-growth (map (juxt :balance :income-growth) data)
         true-height 300
         bar-width 40
@@ -137,8 +120,8 @@
          (map-indexed (render-balance chart-opts) balances)
          (map-indexed 
             (fn [i m]
-              (render-expenses2 (assoc (merge m chart-opts) :i i))) 
-            expenses2)
+              (render-expenses (assoc (merge m chart-opts) :i i))) 
+            expenses)
          (map-indexed (render-income-growth chart-opts) income-growth)]])))
 
 (defui SavingsChart
