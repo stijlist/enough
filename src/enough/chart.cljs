@@ -1,7 +1,7 @@
 (ns enough.chart
   (:require [sablono.core :refer-macros [html]]
             [enough.segment :as segment]
-            [om.next :as om]))
+            [om.next :as om :refer-macros [defui]]))
 
 (defn multimap [kvs]
   (let [assoc-val-as-set 
@@ -95,9 +95,29 @@
      (when (> (y-scale d) 10)
        [:text text-offsets (thousands->k d)])]))
 
+(defui ExpensesSegment
+  Object
+  (render [this]
+    (let [{:keys [i balance expenses additional-expenses expense-breakdown
+                  true-height bar-width y-scale text-offsets]} (om/props this)
+          d (+ expenses additional-expenses)]
+      (html
+        [:g {:transform 
+             (translate (* i bar-width) (- (y-scale balance)))
+             :onMouseOver #(prn expense-breakdown)}
+         [:rect
+          {:fill "lightcoral"
+           :y (- true-height (y-scale d))
+           :height (y-scale d)
+           :width (dec bar-width)}]
+         [:text text-offsets (thousands->k d)]]))))
+
+(def render-expenses2 (om/factory ExpensesSegment {:keyfn :i}))
+    
 (defn savings-chart [data {:keys [width height]}]
   (let [balances (map :balance data) 
         expenses (map (juxt :balance :expenses :additional-expenses :expense-breakdown) data)
+        expenses2 (map #(select-keys % [:balance :expenses :additional-expenses :expense-breakdown]) data)
         income-growth (map (juxt :balance :income-growth) data)
         true-height 300
         bar-width 40
@@ -113,5 +133,15 @@
           :height (str true-height "px") 
           :width (str (* bar-width (count data)) "px")}
          (map-indexed (render-balance chart-opts) balances)
-         (map-indexed (render-expenses chart-opts) expenses)
+         (map-indexed 
+            (fn [i m]
+              (render-expenses2 (assoc (merge m chart-opts) :i i))) 
+            expenses2)
          (map-indexed (render-income-growth chart-opts) income-growth)]])))
+
+(defui SavingsChart
+  Object
+  (render [this]
+    (-> (om/props this)
+      (years-til-retirement)
+      (savings-chart {:width 400 :height 300}))))

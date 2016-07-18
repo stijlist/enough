@@ -1,6 +1,6 @@
 (ns enough.core
   (:require
-   [enough.chart :as chart]
+   [enough.chart :as chart :refer [SavingsChart]]
    [goog.dom :as dom]
    [clojure.set :as set]
    [cljs.spec :as s]
@@ -115,7 +115,7 @@
   Object
   (render [this]
     (prn "re-render Chart" (-> this om/props))
-    (-> (om/props this) 
+    (-> (om/props this)
       (chart/years-til-retirement)
       (chart/savings-chart {:width 400 :height 300}))))
 
@@ -256,7 +256,7 @@
              "Done"]]])))))
 
 (def parameter (om/factory Parameter {:keyfn :name}))
-(def render-chart (om/factory Chart))
+(def render-chart (om/factory SavingsChart))
 (def life-event (om/factory LifeEvent {:keyfn :name}))
 (def life-event-pending (om/factory PendingLifeEvent))
 
