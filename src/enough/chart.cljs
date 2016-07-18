@@ -100,20 +100,22 @@
   (render [this]
     (let [{:keys [i balance expenses additional-expenses expense-breakdown
                   true-height bar-width y-scale text-offsets]} (om/props this)
+          {:keys [mouseover?]} (om/get-state this)
           d (+ expenses additional-expenses)]
       (html
         [:g {:transform 
              (translate (* i bar-width) (- (y-scale balance)))
-             :onMouseOver #(prn expense-breakdown)}
+             :onMouseOver #(om/update-state! this assoc :mouseover? true)
+             :onMouseLeave #(om/update-state! this assoc :mouseover? false)}
          [:rect
-          {:fill "lightcoral"
+          {:fill (if mouseover? "lightblue" "lightcoral")
            :y (- true-height (y-scale d))
            :height (y-scale d)
            :width (dec bar-width)}]
          [:text text-offsets (thousands->k d)]]))))
 
 (def render-expenses2 (om/factory ExpensesSegment {:keyfn :i}))
-    
+
 (defn savings-chart [data {:keys [width height]}]
   (let [balances (map :balance data) 
         expenses (map (juxt :balance :expenses :additional-expenses :expense-breakdown) data)
