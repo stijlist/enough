@@ -93,24 +93,25 @@
         [:g {:transform 
              (translate (* i bar-width) (- (y-scale balance)))
              :onMouseOver #(om/update-state! this assoc :mouseover? true)
-             :onMouseLeave #(om/update-state! this assoc :mouseover? false)}
+             :onMouseLeave #(om/update-state! this assoc :mouseover? false)
+             :onClick #(om/update-state! this update :expanded? not)}
          (when expanded?
-           [:polygon
-            {:onClick #(om/update-state! this assoc :expanded? false)
-             :points 
-             (let [center (js/Math.round (/ bar-width 2))
-                   one-third-inset (js/Math.round (/ bar-width 3))
-                   bar-height (- true-height (y-scale d))]
-               (points 
-                 [center bar-height]
-                 [one-third-inset (- bar-height one-third-inset)]
-                 [(- bar-width one-third-inset) (- bar-height one-third-inset)]))
-             :stroke "blue"
-             :fill
-             "blue"}])
+           (let [center (js/Math.round (/ bar-width 2))
+                 one-third-inset (js/Math.round (/ bar-width 3))
+                 bar-height (- true-height (y-scale d))
+                 tooltip-color "lightcoral"]
+             [:g
+              [:rect
+               {:y (- bar-height 40 one-third-inset) :height 40 :width (* 1 bar-width) :stroke "black" :fill "white"}]
+              [:polygon
+               {:points 
+                (points 
+                  [center bar-height]
+                  [one-third-inset (- bar-height one-third-inset)]
+                  [(- bar-width one-third-inset) (- bar-height one-third-inset)])
+                :style {:stroke "black" :fill "white"}}]]))
          [:rect
-          {:onClick #(om/update-state! this assoc :expanded? true)
-           :fill (if mouseover? "lightblue" "lightcoral")
+          {:fill (if mouseover? "lightblue" "lightcoral")
            :y (- true-height (y-scale d))
            :height (y-scale d)
            :width (dec bar-width)}]
