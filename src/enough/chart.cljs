@@ -79,20 +79,38 @@
      (when (> (y-scale d) 10)
        [:text text-offsets (thousands->k d)])]))
 
+(defn points [& xys]
+  (map (fn [[x y]] (str x "," y)) xys))
+
 (defui ExpensesSegment
   Object
   (render [this]
     (let [{:keys [i balance expenses additional-expenses expense-breakdown
                   true-height bar-width y-scale text-offsets]} (om/props this)
-          {:keys [mouseover?]} (om/get-state this)
+          {:keys [mouseover? expanded?]} (om/get-state this)
           d (+ expenses additional-expenses)]
       (html
         [:g {:transform 
              (translate (* i bar-width) (- (y-scale balance)))
              :onMouseOver #(om/update-state! this assoc :mouseover? true)
              :onMouseLeave #(om/update-state! this assoc :mouseover? false)}
+         (when expanded?
+           [:polygon
+            {:onClick #(om/update-state! this assoc :expanded? false)
+             :points 
+             (let [center (js/Math.round (/ bar-width 2))
+                   one-third-inset (js/Math.round (/ bar-width 3))
+                   bar-height (- true-height (y-scale d))]
+               (points 
+                 [center bar-height]
+                 [one-third-inset (- bar-height one-third-inset)]
+                 [(- bar-width one-third-inset) (- bar-height one-third-inset)]))
+             :stroke "blue"
+             :fill
+             "blue"}])
          [:rect
-          {:fill (if mouseover? "lightblue" "lightcoral")
+          {:onClick #(om/update-state! this assoc :expanded? true)
+           :fill (if mouseover? "lightblue" "lightcoral")
            :y (- true-height (y-scale d))
            :height (y-scale d)
            :width (dec bar-width)}]
