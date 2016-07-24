@@ -117,7 +117,7 @@
            :width (dec bar-width)}]
          [:text text-offsets (thousands->k d)]]))))
 
-(def render-expenses (om/factory ExpensesSegment {:keyfn :i}))
+(def render-expenses (om/factory ExpensesSegment {:keyfn #(-> % (get :i) (str "-expense"))}))
 
 (defn savings-chart [data {:keys [width height]}]
   (let [balances (map :balance data) 
