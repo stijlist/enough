@@ -17,8 +17,8 @@
 
 (defn years-til-retirement
   [{:keys [salary expenses rate-of-return cutoff life-events]}]
-  {:pre [(number? salary) 
-         (number? expenses) 
+  {:pre [(number? salary)
+         (number? expenses)
          (number? rate-of-return)
          (not (nil? cutoff))]}
   (let [year->life-events (life-events-by-year life-events)]

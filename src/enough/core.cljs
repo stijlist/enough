@@ -22,7 +22,7 @@
   {:parameters 
    [{:name "Salary" :value 40000 :editing? false}
     {:name "Expenses" :value 30000 :editing? false}
-    {:name "Rate of return" :value 0.1 :editing? false}]
+    {:name "Rate of return" :value 0.04 :editing? false}]
    :life-events
    [{:name "Moving!" :costs-per-year {0 2000 1 2000}}
     {:name "Buy that Miata!" :costs-per-year {3 5000}}]
