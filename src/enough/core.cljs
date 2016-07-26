@@ -16,7 +16,8 @@
 (s/def ::costs-per-year #(every? number? (keys %)))
 (s/def ::ident (s/tuple keyword? #(not (coll? %))))
 (s/def ::life-events (s/coll-of ::ident []))
-(s/def ::app-state (s/keys :req-un [::pending-event ::life-events]))
+(s/def ::focused-segments (s/and set? #(every? vector? %)))
+(s/def ::app-state (s/keys :req-un [::pending-event ::life-events ::focused-segments]))
 
 (def init-data
   {:parameters 
@@ -26,7 +27,8 @@
    :life-events
    [{:name "Moving!" :costs-per-year {0 2000 1 2000}}
     {:name "Buy that Miata!" :costs-per-year {3 5000}}]
-   :pending-event nil})
+   :pending-event nil
+   :focused-segments #{}})
 
 (defmulti read om/dispatch)
 
@@ -49,9 +51,10 @@
         parameters (om/db->tree '[*] (get s :parameters) s)
         life-events (om/db->tree '[*] (get s :life-events) s)
         pname->pvalue (into {} (map (juxt :name :value)) parameters)
-        chart (-> pname->pvalue 
+        focused (get s :focused-segments)
+        chart (-> pname->pvalue
                 (set/rename-keys ident->chart-key)
-                (merge {:life-events life-events :cutoff 65}))]
+                (assoc :life-events life-events :cutoff 65 :focused focused))]
     {:value chart}))
 
 (defmethod read :pending-event
@@ -110,6 +113,14 @@
     {:action
      (fn []
        (swap! state (apply-if-valid add-life-event ::app-state)))}))
+
+(defmethod mutate 'segments/focus
+  [{:keys [state]} key {:keys [ident] :as params}]
+  (swap! state (apply-if-valid update ::app-state) :focused-segments conj ident))
+
+(defmethod mutate 'segments/blur
+  [{:keys [state]} key {:keys [ident] :as params}]
+  (swap! state (apply-if-valid update ::app-state) :focused-segments disj ident))
 
 (defn coerce-to-type-of [orig v]
   (condp = (type orig)
@@ -255,8 +266,8 @@
 (defui Root
   static om/IQuery
   (query [this]
-    (let [pquery (om/get-query Parameter) lquery (om/get-query LifeEvent)]
-      `[{:parameters ~pquery} :chart {:life-events ~lquery} :pending-event]))
+    (let [pquery (om/get-query Parameter) lquery (om/get-query LifeEvent) cquery (om/get-query SavingsChart)]
+      `[{:parameters ~pquery} {:chart ~cquery} {:life-events ~lquery} :pending-event]))
   Object
   (render [this]
     (let [{:keys [parameters chart life-events pending-event] :as props} (om/props this)]

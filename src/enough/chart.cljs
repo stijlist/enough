@@ -79,22 +79,27 @@
   (map (fn [[x y]] (str x "," y)) xys))
 
 (defui ExpensesSegment
+  static om/Ident
+  (ident [this props]
+    [:expenses-segments/by-index (:i props)])
   Object
   (render [this]
-    (let [{:keys [i balance expenses expense-breakdown
+    (let [{:keys [i balance expenses expense-breakdown focused
                   true-height bar-width y-scale text-offsets]} (om/props this)
-          {:keys [mouseover? expanded?]} (om/get-state this)
+          {:keys [mouseover?]} (om/get-state this)
+          focused? (contains? focused (om/get-ident this))
           variable-costs (->> expense-breakdown
                            (map #(get-in % [:costs-per-year i]))
                            (reduce +))
+          focus! (om/get-computed this :focus!)
           d (+ expenses variable-costs)]
       (html
         [:g {:transform 
              (translate (* i bar-width) (- (y-scale balance)))
              :onMouseOver #(om/update-state! this assoc :mouseover? true)
              :onMouseLeave #(om/update-state! this assoc :mouseover? false)
-             :onClick #(om/update-state! this update :expanded? not)}
-         (when expanded?
+             :onClick #(focus! {:ident (om/get-ident this)})}
+         (when focused?
            (let [center (js/Math.round (/ bar-width 2))
                  one-third-inset (js/Math.round (/ bar-width 3))
                  bar-height (- true-height (y-scale d))
@@ -118,7 +123,7 @@
 
 (def render-expenses (om/factory ExpensesSegment {:keyfn #(-> % (get :i) (str "-expense"))}))
 
-(defn savings-chart [data]
+(defn savings-chart [data {:keys [focused focus!] :as opts}]
   (let [balances (map :balance data) 
         expenses (map #(select-keys % [:balance :expenses :expense-breakdown]) data)
         income-growth (map (juxt :balance :income-growth) data)
@@ -133,6 +138,7 @@
          :text-offsets {:x (+ 7 (/ bar-width 2)) :y (- max-bar-height 3) :dy "0.15em"}}]
     (html
       [:div {:style {:overflow "scroll" :max-width "100%" :max-height "100%"}}
+        ;; anchor tooltips on this div, positioned absolutely
         [:svg
          {:class "chart" 
           :height (str max-bar-height "px") 
@@ -140,11 +146,18 @@
          (map-indexed (render-balance chart-opts) balances)
          (map-indexed
             (fn [i m]
-              (render-expenses (assoc (merge m chart-opts) :i i)))
+              (render-expenses (om/computed (assoc (merge m chart-opts) :i i :focused focused) {:focus! focus!})))
             expenses)
          (map-indexed (render-income-growth chart-opts) income-growth)]])))
 
 (defui SavingsChart
+  static om/IQuery
+  (query [this] '[:chart])
   Object
   (render [this]
-    (-> (om/props this) years-til-retirement savings-chart)))
+    (let [{:keys [focused] :as props} (om/props this)]
+      (-> props 
+        years-til-retirement 
+        (savings-chart 
+          {:focused focused 
+           :focus! #(om/transact! this `[(segments/focus ~%)])})))))
