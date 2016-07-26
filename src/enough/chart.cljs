@@ -118,7 +118,7 @@
 
 (def render-expenses (om/factory ExpensesSegment {:keyfn #(-> % (get :i) (str "-expense"))}))
 
-(defn savings-chart [data {:keys [width height]}]
+(defn savings-chart [data]
   (let [balances (map :balance data) 
         expenses (map #(select-keys % [:balance :expenses :expense-breakdown]) data)
         income-growth (map (juxt :balance :income-growth) data)
@@ -132,7 +132,7 @@
          :bar-width bar-width
          :text-offsets {:x (+ 7 (/ bar-width 2)) :y (- max-bar-height 3) :dy "0.15em"}}]
     (html
-      [:div {:style {:overflow "scroll" :max-width "100%" :max-height (str height "px")}}
+      [:div {:style {:overflow "scroll" :max-width "100%" :max-height "100%"}}
         [:svg
          {:class "chart" 
           :height (str max-bar-height "px") 
@@ -147,6 +147,4 @@
 (defui SavingsChart
   Object
   (render [this]
-    (-> (om/props this)
-      (years-til-retirement)
-      (savings-chart {:width 400 :height 300}))))
+    (-> (om/props this) years-til-retirement savings-chart)))
