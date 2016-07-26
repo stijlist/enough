@@ -123,23 +123,25 @@
   (let [balances (map :balance data) 
         expenses (map #(select-keys % [:balance :expenses :additional-expenses :expense-breakdown]) data)
         income-growth (map (juxt :balance :income-growth) data)
-        true-height 300
+        pixels-per-thousand 0.5
+        max-bar-value (reduce + (-> (last data) (select-keys [:balance :expenses :additional-expenses :income-growth]) vals))
+        max-bar-height (* pixels-per-thousand (/ max-bar-value 1000))
         bar-width 40
         chart-opts
-        {:true-height true-height
-         :y-scale (linear-scale [0 1000000] [0 true-height])
+        {:true-height max-bar-height
+         :y-scale (linear-scale [0 max-bar-value] [0 max-bar-height])
          :bar-width bar-width
-         :text-offsets {:x (+ 7 (/ bar-width 2)) :y (- true-height 3) :dy "0.15em"}}]
+         :text-offsets {:x (+ 7 (/ bar-width 2)) :y (- max-bar-height 3) :dy "0.15em"}}]
     (html
       [:div {:style {:overflow "scroll" :max-width "100%" :max-height (str height "px")}}
-        [:svg 
+        [:svg
          {:class "chart" 
-          :height (str true-height "px") 
+          :height (str max-bar-height "px") 
           :width (str (* bar-width (count data)) "px")}
          (map-indexed (render-balance chart-opts) balances)
-         (map-indexed 
+         (map-indexed
             (fn [i m]
-              (render-expenses (assoc (merge m chart-opts) :i i))) 
+              (render-expenses (assoc (merge m chart-opts) :i i)))
             expenses)
          (map-indexed (render-income-growth chart-opts) income-growth)]])))
 
