@@ -27,17 +27,13 @@
             growth (* balance rate-of-return)
             this-year (count years)
             expense-breakdown (get year->life-events this-year)
-            cost-this-year (->> expense-breakdown
-                             (map #(get-in % [:costs-per-year this-year]))
-                             (reduce +))
-            new-balance (- (+ balance salary growth) (+ expenses cost-this-year))
+            new-balance (- (+ balance salary growth) expenses)
             done? (or 
                     (>= this-year cutoff)
                     (>= growth expenses)
                     (< balance 0))
             next (conj years {:balance new-balance 
                               :expenses expenses 
-                              :additional-expenses cost-this-year
                               :income-growth growth 
                               :income salary
                               :expense-breakdown expense-breakdown})]
@@ -85,10 +81,13 @@
 (defui ExpensesSegment
   Object
   (render [this]
-    (let [{:keys [i balance expenses additional-expenses expense-breakdown
+    (let [{:keys [i balance expenses expense-breakdown
                   true-height bar-width y-scale text-offsets]} (om/props this)
           {:keys [mouseover? expanded?]} (om/get-state this)
-          d (+ expenses additional-expenses)]
+          variable-costs (->> expense-breakdown
+                           (map #(get-in % [:costs-per-year i]))
+                           (reduce +))
+          d (+ expenses variable-costs)]
       (html
         [:g {:transform 
              (translate (* i bar-width) (- (y-scale balance)))
@@ -121,10 +120,10 @@
 
 (defn savings-chart [data {:keys [width height]}]
   (let [balances (map :balance data) 
-        expenses (map #(select-keys % [:balance :expenses :additional-expenses :expense-breakdown]) data)
+        expenses (map #(select-keys % [:balance :expenses :expense-breakdown]) data)
         income-growth (map (juxt :balance :income-growth) data)
         pixels-per-thousand 0.5
-        max-bar-value (reduce + (-> (last data) (select-keys [:balance :expenses :additional-expenses :income-growth]) vals))
+        max-bar-value (reduce + (-> (last data) (select-keys [:balance :expenses :income-growth]) vals))
         max-bar-height (* pixels-per-thousand (/ max-bar-value 1000))
         bar-width 40
         chart-opts
