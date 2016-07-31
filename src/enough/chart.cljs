@@ -99,21 +99,6 @@
              :onMouseOver #(om/update-state! this assoc :mouseover? true)
              :onMouseLeave #(om/update-state! this assoc :mouseover? false)
              :onClick #(focus! {:ident (om/get-ident this)})}
-         (when focused?
-           (let [center (js/Math.round (/ bar-width 2))
-                 one-third-inset (js/Math.round (/ bar-width 3))
-                 bar-height (- true-height (y-scale d))
-                 tooltip-color "lightcoral"]
-             [:g
-              [:rect
-               {:y (- bar-height 40 one-third-inset) :height 40 :width (* 1 bar-width) :stroke "black" :fill "white"}]
-              [:polygon
-               {:points 
-                (points 
-                  [center bar-height]
-                  [one-third-inset (- bar-height one-third-inset)]
-                  [(- bar-width one-third-inset) (- bar-height one-third-inset)])
-                :style {:stroke "black" :fill "white"}}]]))
          [:rect
           {:fill (if mouseover? "lightblue" "lightcoral")
            :y (- true-height (y-scale d))
@@ -150,6 +135,7 @@
             expenses)
          (map-indexed (render-income-growth chart-opts) income-growth)]])))
 
+;; I want the focus method to schedule a re-render of only the popovers, separate from the SVG chart
 (defui SavingsChart
   static om/IQuery
   (query [this] '[:chart])
