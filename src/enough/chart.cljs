@@ -125,8 +125,8 @@
       [:div {:style {:overflow "scroll" :max-width "100%" :max-height "100%"}}
         ;; anchor tooltips on this div, positioned absolutely
         [:svg
-         {:class "chart" 
-          :height (str max-bar-height "px") 
+         {:class "chart"
+          :height (str max-bar-height "px")
           :width (str (* bar-width (count data)) "px")}
          (map-indexed (render-balance chart-opts) balances)
          (map-indexed
