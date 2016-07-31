@@ -2,6 +2,7 @@
   (:require
    [enough.chart :as chart :refer [SavingsChart]]
    [goog.dom :as dom]
+   [om.dom :refer [node]]
    [clojure.set :as set]
    [cljs.spec :as s]
    [om.next :as om :refer-macros [defui]]
@@ -56,6 +57,12 @@
                 (set/rename-keys ident->chart-key)
                 (assoc :life-events life-events :cutoff 65 :focused focused))]
     {:value chart}))
+
+(defmethod read :popovers
+  [{:keys [state]} key params]
+  (let [s @state
+        popovers (om/db->tree '[*] (get s :focused-segments) s)]
+    popovers))
 
 (defmethod read :pending-event
   [{:keys [state]} key params]
@@ -258,26 +265,49 @@
                 (om/transact! this `[(events/save-pending) :life-events :chart :pending-event]))}
              "Done"]]])))))
 
+(defui ExpensePopovers
+  static om/IQuery
+  (query [this]
+    '[:target])
+  Object
+  (render [this]
+    (let [{:keys [target]} (om/props this)]
+      ;; render an absolutely positioned square 5px over the target
+      (html
+        [:div 
+         {:style 
+          {:height "20px"
+           :width "20px"
+           :background-color "black"
+           :top 50
+           :left 50
+           :position "relative"}}]))))
+
 (def parameter (om/factory Parameter {:keyfn :name}))
 (def render-chart (om/factory SavingsChart))
+(def render-popovers (om/factory ExpensePopovers))
 (def life-event (om/factory LifeEvent {:keyfn :name}))
 (def life-event-pending (om/factory PendingLifeEvent))
 
 (defui Root
   static om/IQuery
   (query [this]
-    (let [pquery (om/get-query Parameter) lquery (om/get-query LifeEvent) cquery (om/get-query SavingsChart)]
-      `[{:parameters ~pquery} {:chart ~cquery} {:life-events ~lquery} :pending-event]))
+    (let [pquery (om/get-query Parameter) lquery (om/get-query LifeEvent) cquery (om/get-query SavingsChart) ppquery (om/get-query ExpensePopovers)]
+      `[{:parameters ~pquery} {:chart ~cquery} {:life-events ~lquery} :pending-event {:popovers ~ppquery}]))
   Object
   (render [this]
-    (let [{:keys [parameters chart life-events pending-event] :as props} (om/props this)]
+    (let [{:keys [parameters chart life-events pending-event popovers] :as props} (om/props this)]
       (html 
         [:div
          [:div (map parameter parameters)]
          [:div
            (map life-event life-events)
            (life-event-pending pending-event)]
-         (render-chart chart)]))))
+         [:div
+          [:div (render-popovers popovers)]
+          (render-chart chart)]])))
+  (componentDidMount [this]
+    (prn (-> this node .getBoundingClientRect js->clj))))
 
 (def parser (om/parser {:read read :mutate mutate}))
 (def reconciler (om/reconciler {:state init-data :parser parser}))
