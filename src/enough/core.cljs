@@ -272,15 +272,15 @@
   Object
   (render [this]
     (let [{:keys [target]} (om/props this)]
-      ;; render an absolutely positioned square 5px over the target
+      ;; testing popover positioning
       (html
         [:div 
          {:style 
           {:height "20px"
            :width "20px"
            :background-color "black"
-           :top 50
-           :left 50
+           :top 0
+           :left 0
            :position "relative"}}]))))
 
 (def parameter (om/factory Parameter {:keyfn :name}))
@@ -312,7 +312,7 @@
          [:div
            (map life-event life-events)
            (life-event-pending pending-event)]
-         [:div
+         [:div {:style {:overflow "scroll" :max-width "100%" :max-height "100%"}}
           [:div (render-popovers popovers)]
           (render-chart chart)]])))
   (componentDidMount [this]

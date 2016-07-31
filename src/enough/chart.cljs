@@ -122,18 +122,16 @@
          :bar-width bar-width
          :text-offsets {:x (+ 7 (/ bar-width 2)) :y (- max-bar-height 3) :dy "0.15em"}}]
     (html
-      [:div {:style {:overflow "scroll" :max-width "100%" :max-height "100%"}}
-        ;; anchor tooltips on this div, positioned absolutely
-        [:svg
-         {:class "chart"
-          :height (str max-bar-height "px")
-          :width (str (* bar-width (count data)) "px")}
-         (map-indexed (render-balance chart-opts) balances)
-         (map-indexed
-            (fn [i m]
-              (render-expenses (om/computed (assoc (merge m chart-opts) :i i :focused focused) {:focus! focus!})))
-            expenses)
-         (map-indexed (render-income-growth chart-opts) income-growth)]])))
+      [:svg
+       {:class "chart"
+        :height (str max-bar-height "px")
+        :width (str (* bar-width (count data)) "px")}
+       (map-indexed (render-balance chart-opts) balances)
+       (map-indexed
+          (fn [i m]
+            (render-expenses (om/computed (assoc (merge m chart-opts) :i i :focused focused) {:focus! focus!})))
+          expenses)
+       (map-indexed (render-income-growth chart-opts) income-growth)])))
 
 ;; I want the focus method to schedule a re-render of only the popovers, separate from the SVG chart
 (defui SavingsChart
