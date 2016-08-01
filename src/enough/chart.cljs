@@ -98,7 +98,7 @@
              :onMouseOver #(om/update-state! this assoc :mouseover? true)
              :onMouseLeave #(om/update-state! this assoc :mouseover? false)
              :onClick #(display-popover! 
-                         {:ident (om/get-ident this) :position {:top (- (y-scale balance)) :left (* i bar-width)} :content [:div "test"]})}
+                         {:ident (om/get-ident this) :position {:top (- (y-scale balance)) :left (* i bar-width)} :message [:div "test"]})}
          [:rect
           {:fill (if mouseover? "lightblue" "lightcoral")
            :y (- true-height (y-scale d))
@@ -143,4 +143,4 @@
       (-> props 
         years-til-retirement 
         (savings-chart 
-          {:display-popover! #(om/transact! this `[(popovers/show ~%)])})))))
+          {:display-popover! #(om/transact! this `[(popovers/show ~%) :popovers])})))))

@@ -17,7 +17,7 @@
 (s/def ::costs-per-year #(every? number? (keys %)))
 (s/def ::ident (s/tuple keyword? #(not (coll? %))))
 (s/def ::life-events (s/coll-of ::ident []))
-(s/def ::popovers (s/and set? #(every? vector? %)))
+(s/def ::popovers map?)
 (s/def ::app-state (s/keys :req-un [::pending-event ::life-events ::popovers]))
 
 (def init-data
@@ -29,7 +29,7 @@
    [{:name "Moving!" :costs-per-year {0 2000 1 2000}}
     {:name "Buy that Miata!" :costs-per-year {3 5000}}]
    :pending-event nil
-   :popovers #{}})
+   :popovers [{:ident [:a "test"] :message [:div "hello"] :position {:top 50 :left 50}}]})
 
 (defmulti read om/dispatch)
 
@@ -62,7 +62,7 @@
   [{:keys [state]} key params]
   (let [s @state
         popovers (om/db->tree '[*] (get s :popovers) s)]
-    popovers))
+    {:value popovers}))
 
 (defmethod read :pending-event
   [{:keys [state]} key params]
@@ -123,11 +123,7 @@
 
 (defmethod mutate 'popovers/show
   [{:keys [state]} key {:keys [ident] :as params}]
-  (swap! state (apply-if-valid update ::app-state) :popovers conj ident))
-
-(defmethod mutate 'popovers/hide
-  [{:keys [state]} key {:keys [ident] :as params}]
-  (swap! state (apply-if-valid update ::app-state) :popovers disj ident))
+  {:action #(swap! state update-in [:popovers/by-ident ident] params)})
 
 (defn coerce-to-type-of [orig v]
   (condp = (type orig)
@@ -265,27 +261,30 @@
                 (om/transact! this `[(events/save-pending) :life-events :chart :pending-event]))}
              "Done"]]])))))
 
-(defui ExpensePopovers
+(defui ExpensePopover
   static om/IQuery
   (query [this]
-    '[:message :position])
+    '[:message :position :ident])
+  static om/Ident
+  (ident [this props]
+    [:popovers/by-ident (:ident props)])
   Object
   (render [this]
-    (let [{:keys [target]} (om/props this)]
-      ;; testing popover positioning
+    (let [{:keys [message position]} (om/props this)]
+      (prn "popoverprops" (om/props this))
       (html
         [:div 
          {:style 
           {:height "20px"
            :width "20px"
-           :background-color "black"
-           :top 0
-           :left 0
-           :position "relative"}}]))))
+           :top (:top position)
+           :left (:left position)
+           :position "relative"}}
+         message]))))
 
 (def parameter (om/factory Parameter {:keyfn :name}))
 (def render-chart (om/factory SavingsChart))
-(def render-popovers (om/factory ExpensePopovers))
+(def render-popover (om/factory ExpensePopover))
 (def life-event (om/factory LifeEvent {:keyfn :name}))
 (def life-event-pending (om/factory PendingLifeEvent))
 
@@ -301,7 +300,7 @@
 (defui Root
   static om/IQuery
   (query [this]
-    (let [pquery (om/get-query Parameter) lquery (om/get-query LifeEvent) cquery (om/get-query SavingsChart) ppquery (om/get-query ExpensePopovers)]
+    (let [pquery (om/get-query Parameter) lquery (om/get-query LifeEvent) cquery (om/get-query SavingsChart) ppquery (om/get-query ExpensePopover)]
       `[{:parameters ~pquery} {:chart ~cquery} {:life-events ~lquery} :pending-event {:popovers ~ppquery}]))
   Object
   (render [this]
@@ -313,7 +312,7 @@
            (map life-event life-events)
            (life-event-pending pending-event)]
          [:div {:style {:overflow "scroll" :max-width "100%" :max-height "100%"}}
-          [:div (render-popovers popovers)]
+          [:div (map render-popover popovers)]
           (render-chart chart)]]))))
 
 (def parser (om/parser {:read read :mutate mutate}))
