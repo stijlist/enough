@@ -108,6 +108,10 @@
    (fn []
      (swap! state (apply-if-valid update-in ::app-state) [:pending-event] merge {:name pending-name}))})
 
+(defmethod mutate 'events/cancel-pending
+  [{:keys [state]} key params]
+  {:action #(swap! state assoc :pending-event nil)})
+
 (defmethod mutate 'events/save-pending
   [{:keys [state]} key params]
   (let [pending (:pending-event @state)
@@ -258,6 +262,7 @@
                     `[(event/update-pending-costs {:pending-cost ~pc :pending-index ~pi})])
                   (om/update-state! this dissoc :pending-cost :pending-index))))}
              "Add another cost"]
+            [:button {:onClick #(om/transact! this '[(events/cancel-pending)])} "Cancel"]
             [:button 
              {:onClick 
               #(when pending
