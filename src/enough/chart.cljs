@@ -98,7 +98,7 @@
              :onMouseOver #(om/update-state! this assoc :mouseover? true)
              :onMouseLeave #(om/update-state! this assoc :mouseover? false)
              :onClick #(display-popover! 
-                         {:ident (om/get-ident this) :position {:top (- (y-scale balance)) :left (* i bar-width)} :message [:div "test"]})}
+                         {:ident (om/get-ident this) :position {:top (- true-height (+ (y-scale balance) (y-scale d))) :left (* i bar-width)} :message [:span "test"]})}
          [:rect
           {:fill (if mouseover? "lightblue" "lightcoral")
            :y (- true-height (y-scale d))

@@ -280,13 +280,12 @@
   (render [this]
     (let [{:keys [message position]} (om/props this)]
       (html
-        [:div 
+        [:span 
          {:style 
-          {:height "20px"
-           :width "20px"
-           :top 50 #_(:top position)
-           :left (:left position)
-           :position "relative"}}
+          (merge
+            position
+            {:position "relative"
+             :border "1px solid black"})}
          message]))))
 
 (def parameter (om/factory Parameter {:keyfn :name}))
