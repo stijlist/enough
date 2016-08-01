@@ -91,14 +91,15 @@
           variable-costs (->> expense-breakdown
                            (map #(get-in % [:costs-per-year i]))
                            (reduce +))
-          focus! (om/get-computed this :focus!)
+          display-popover! (om/get-computed this :display-popover!)
           d (+ expenses variable-costs)]
       (html
         [:g {:transform 
              (translate (* i bar-width) (- (y-scale balance)))
              :onMouseOver #(om/update-state! this assoc :mouseover? true)
              :onMouseLeave #(om/update-state! this assoc :mouseover? false)
-             :onClick #(focus! {:ident (om/get-ident this)})}
+             :onClick #(display-popover! 
+                         {:ident (om/get-ident this) :position {:top (- (y-scale balance)) :left (* i bar-width)} :content [:div "test"]})}
          [:rect
           {:fill (if mouseover? "lightblue" "lightcoral")
            :y (- true-height (y-scale d))
@@ -108,7 +109,7 @@
 
 (def render-expenses (om/factory ExpensesSegment {:keyfn #(-> % (get :i) (str "-expense"))}))
 
-(defn savings-chart [data {:keys [focused focus!] :as opts}]
+(defn savings-chart [data {:keys [display-popover!] :as opts}]
   (let [balances (map :balance data) 
         expenses (map #(select-keys % [:balance :expenses :expense-breakdown]) data)
         income-growth (map (juxt :balance :income-growth) data)
@@ -129,7 +130,7 @@
        (map-indexed (render-balance chart-opts) balances)
        (map-indexed
           (fn [i m]
-            (render-expenses (om/computed (assoc (merge m chart-opts) :i i :focused focused) {:focus! focus!})))
+            (render-expenses (om/computed (assoc (merge m chart-opts) :i i) {:display-popover! display-popover!})))
           expenses)
        (map-indexed (render-income-growth chart-opts) income-growth)])))
 
@@ -139,9 +140,8 @@
   (query [this] '[:chart])
   Object
   (render [this]
-    (let [{:keys [focused] :as props} (om/props this)]
+    (let [props (om/props this)]
       (-> props 
         years-til-retirement 
         (savings-chart 
-          {:focused focused 
-           :focus! #(om/transact! this `[(segments/focus ~%)])})))))
+          {:display-popover! #(om/transact! this `[(popovers/show ~%)])})))))

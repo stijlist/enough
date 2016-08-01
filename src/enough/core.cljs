@@ -17,8 +17,8 @@
 (s/def ::costs-per-year #(every? number? (keys %)))
 (s/def ::ident (s/tuple keyword? #(not (coll? %))))
 (s/def ::life-events (s/coll-of ::ident []))
-(s/def ::focused-segments (s/and set? #(every? vector? %)))
-(s/def ::app-state (s/keys :req-un [::pending-event ::life-events ::focused-segments]))
+(s/def ::popovers (s/and set? #(every? vector? %)))
+(s/def ::app-state (s/keys :req-un [::pending-event ::life-events ::popovers]))
 
 (def init-data
   {:parameters 
@@ -29,7 +29,7 @@
    [{:name "Moving!" :costs-per-year {0 2000 1 2000}}
     {:name "Buy that Miata!" :costs-per-year {3 5000}}]
    :pending-event nil
-   :focused-segments #{}})
+   :popovers #{}})
 
 (defmulti read om/dispatch)
 
@@ -61,7 +61,7 @@
 (defmethod read :popovers
   [{:keys [state]} key params]
   (let [s @state
-        popovers (om/db->tree '[*] (get s :focused-segments) s)]
+        popovers (om/db->tree '[*] (get s :popovers) s)]
     popovers))
 
 (defmethod read :pending-event
@@ -121,13 +121,13 @@
      (fn []
        (swap! state (apply-if-valid add-life-event ::app-state)))}))
 
-(defmethod mutate 'segments/focus
+(defmethod mutate 'popovers/show
   [{:keys [state]} key {:keys [ident] :as params}]
-  (swap! state (apply-if-valid update ::app-state) :focused-segments conj ident))
+  (swap! state (apply-if-valid update ::app-state) :popovers conj ident))
 
-(defmethod mutate 'segments/blur
+(defmethod mutate 'popovers/hide
   [{:keys [state]} key {:keys [ident] :as params}]
-  (swap! state (apply-if-valid update ::app-state) :focused-segments disj ident))
+  (swap! state (apply-if-valid update ::app-state) :popovers disj ident))
 
 (defn coerce-to-type-of [orig v]
   (condp = (type orig)
@@ -268,7 +268,7 @@
 (defui ExpensePopovers
   static om/IQuery
   (query [this]
-    '[:target])
+    '[:message :position])
   Object
   (render [this]
     (let [{:keys [target]} (om/props this)]
@@ -314,9 +314,7 @@
            (life-event-pending pending-event)]
          [:div {:style {:overflow "scroll" :max-width "100%" :max-height "100%"}}
           [:div (render-popovers popovers)]
-          (render-chart chart)]])))
-  (componentDidMount [this]
-    (prn (-> this node .getBoundingClientRect js->clj))))
+          (render-chart chart)]]))))
 
 (def parser (om/parser {:read read :mutate mutate}))
 (def reconciler (om/reconciler {:state init-data :parser parser}))
