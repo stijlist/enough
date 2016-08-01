@@ -87,7 +87,6 @@
     (let [{:keys [i balance expenses expense-breakdown focused
                   true-height bar-width y-scale text-offsets]} (om/props this)
           {:keys [mouseover?]} (om/get-state this)
-          focused? (contains? focused (om/get-ident this))
           variable-costs (->> expense-breakdown
                            (map #(get-in % [:costs-per-year i]))
                            (reduce +))
