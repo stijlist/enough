@@ -28,7 +28,7 @@
    [{:name "Moving!" :costs-per-year {0 2000 1 2000}}
     {:name "Buy that Miata!" :costs-per-year {3 5000}}]
    :pending-event nil
-   :popovers [{:ident [:a "test"] :message [:div "hello"] :position {:top 50 :left 50}}]})
+   :popovers []})
 
 (defmulti read om/dispatch)
 
