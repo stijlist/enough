@@ -297,8 +297,11 @@
 (defui Root
   static om/IQuery
   (query [this]
-    (let [pquery (om/get-query Parameter) lquery (om/get-query LifeEvent) cquery (om/get-query SavingsChart) ppquery (om/get-query ExpensePopover)]
-      `[{:parameters ~pquery} {:chart ~cquery} {:life-events ~lquery} :pending-event {:popovers ~ppquery}]))
+    `[{:parameters ~(om/get-query Parameter)}
+      {:chart ~(om/get-query SavingsChart)}
+      {:life-events ~(om/get-query LifeEvent)}
+      {:popovers ~(om/get-query ExpensePopover)}
+      :pending-event])
   Object
   (render [this]
     (let [{:keys [parameters chart life-events pending-event popovers] :as props} (om/props this)]
