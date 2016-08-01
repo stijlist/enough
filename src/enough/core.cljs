@@ -294,15 +294,6 @@
 (def life-event (om/factory LifeEvent {:keyfn :name}))
 (def life-event-pending (om/factory PendingLifeEvent))
 
-(def BoundingClientRect (-> (dom/getElement "app") .getBoundingClientRect type))
-
-(extend-type 
-  BoundingClientRect
-  IEncodeClojure
-  (-js->clj [x options]
-    (into {}
-      (for [k (js/Object.keys x)] [(keyword k) (js->clj (aget x k))]))))
-
 (defui Root
   static om/IQuery
   (query [this]
