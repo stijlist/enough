@@ -17,7 +17,6 @@
 (s/def ::costs-per-year #(every? number? (keys %)))
 (s/def ::ident (s/tuple keyword? #(not (coll? %))))
 (s/def ::life-events (s/coll-of ::ident []))
-(s/def ::popovers map?)
 (s/def ::app-state (s/keys :req-un [::pending-event ::life-events ::popovers]))
 
 (def init-data
