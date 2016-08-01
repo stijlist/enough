@@ -123,7 +123,11 @@
 
 (defmethod mutate 'popovers/show
   [{:keys [state]} key {:keys [ident] :as params}]
-  {:action #(swap! state assoc-in [:popovers/by-ident ident] params)})
+  (letfn [(add-popover [state p]
+            (-> state
+              (assoc-in [:popovers/by-ident ident] p)
+              (update :popovers conj [:popovers/by-ident ident])))]
+    {:action #(swap! state add-popover params)}))
 
 (defn coerce-to-type-of [orig v]
   (condp = (type orig)
@@ -276,7 +280,7 @@
          {:style 
           {:height "20px"
            :width "20px"
-           :top (:top position)
+           :top 50 #_(:top position)
            :left (:left position)
            :position "relative"}}
          message]))))
