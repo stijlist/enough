@@ -133,7 +133,6 @@
           expenses)
        (map-indexed (render-income-growth chart-opts) income-growth)])))
 
-;; I want the focus method to schedule a re-render of only the popovers, separate from the SVG chart
 (defui SavingsChart
   static om/IQuery
   (query [this] '[:chart])

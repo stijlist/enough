@@ -123,7 +123,7 @@
 
 (defmethod mutate 'popovers/show
   [{:keys [state]} key {:keys [ident] :as params}]
-  {:action #(swap! state update-in [:popovers/by-ident ident] params)})
+  {:action #(swap! state assoc-in [:popovers/by-ident ident] params)})
 
 (defn coerce-to-type-of [orig v]
   (condp = (type orig)
@@ -271,7 +271,6 @@
   Object
   (render [this]
     (let [{:keys [message position]} (om/props this)]
-      (prn "popoverprops" (om/props this))
       (html
         [:div 
          {:style 
