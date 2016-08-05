@@ -1,6 +1,5 @@
 (ns enough.chart
   (:require [sablono.core :refer-macros [html]]
-            [enough.segment :as segment]
             [om.next :as om :refer-macros [defui]]))
 
 (defn multimap [kvs]
@@ -14,6 +13,8 @@
 (defn life-events-by-year [life-events]
   (let [get-year-ev-pairs (fn [e] (for [k (-> e :costs-per-year keys)] [k e]))]
     (multimap (mapcat get-year-ev-pairs life-events))))
+
+(defrecord Year [^number balance ^number income-growth ^number expenses expense-breakdown])
 
 (defn years-til-retirement
   [{:keys [salary expenses rate-of-return initial-savings cutoff life-events]}]
@@ -33,12 +34,8 @@
                     (>= this-year cutoff)
                     (>= growth expenses)
                     (< balance 0))
-            next (conj years {:balance new-balance 
-                              :expenses expenses 
-                              :income-growth growth 
-                              :income salary
-                              :expense-breakdown expense-breakdown})]
-        (if done? next (recur next))))))
+            next (conj years (Year. new-balance growth expenses expense-breakdown))]
+        (if done? (do (prn this-year) next) (recur next))))))
 
 (defn linear-scale [[domain-start domain-end]
                     [range-start range-end]]
@@ -88,9 +85,7 @@
     (let [{:keys [i balance expenses expense-breakdown focused
                   true-height bar-width y-scale text-offsets]} (om/props this)
           {:keys [mouseover?]} (om/get-state this)
-          variable-costs (->> expense-breakdown
-                           (map #(get-in % [:costs-per-year i]))
-                           (reduce +))
+          variable-costs (transduce (map #(get-in % [:costs-per-year i])) + expense-breakdown)
           display-popover! (om/get-computed this :display-popover!)
           d (+ expenses variable-costs)]
       (html
@@ -140,7 +135,8 @@
   Object
   (render [this]
     (let [props (om/props this)]
-      (-> props 
-        years-til-retirement 
-        (savings-chart 
-          {:display-popover! #(om/transact! this `[(popovers/show ~%) :popovers])})))))
+      (time
+        (-> props 
+          years-til-retirement 
+          (savings-chart 
+            {:display-popover! #(om/transact! this `[(popovers/show ~%) :popovers])}))))))
