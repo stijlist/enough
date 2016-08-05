@@ -23,7 +23,8 @@
   {:parameters 
    [{:name "Salary" :value 40000 :editing? false}
     {:name "Expenses" :value 30000 :editing? false}
-    {:name "Rate of return" :value 0.04 :editing? false}]
+    {:name "Rate of return" :value 0.04 :editing? false}
+    {:name "Initial savings" :value 0 :editing? false}]
    :life-events
    [{:name "Moving!" :costs-per-year {0 2000 1 2000}}
     {:name "Buy that Miata!" :costs-per-year {3 5000}}]
@@ -43,7 +44,7 @@
     {:value (om/db->tree query (get s key) s)}))
 
 (def ident->chart-key
-  {"Salary" :salary "Expenses" :expenses "Rate of return" :rate-of-return})
+  {"Salary" :salary "Expenses" :expenses "Rate of return" :rate-of-return "Initial savings" :initial-savings})
 
 (defmethod read :chart
   [{:keys [state]} key params]
@@ -98,7 +99,9 @@
          (not (nil? pending-index))
          (not (nil? pending-duration))]}
   (let [costs (get-in @state [:pending-event :costs-per-year])
-        expanded-cost (apply hash-map (interleave (range pending-index (+ pending-index pending-duration)) (repeat pending-cost)))
+        datrange (range pending-index (+ pending-index pending-duration))
+        kvs (interleave datrange (repeat pending-cost))
+        expanded-cost (apply hash-map kvs)
         new-costs (merge costs expanded-cost)]
     {:action 
      (fn []
@@ -220,6 +223,8 @@
   (query [this]
     [:pending-event])
   Object
+  (initLocalState [this]
+    {:editing-name false :pending-cost "0" :pending-index "0" :pending-duration "1"})
   (render [this]
     (let [{:keys [name costs-per-year] :as pending} (:pending-event (om/props this))
           creating? (not (nil? pending))
@@ -263,6 +268,8 @@
                 (let [pc (js/Number pending-cost)
                       pi (js/Number pending-index)
                       pd (js/Number pending-duration)]
+                (prn pending-duration)
+                (assert (not (zero? pd)))
                 (do
                   (om/transact! this 
                     `[(event/update-pending-costs {:pending-cost ~pc :pending-index ~pi :pending-duration ~pd})])

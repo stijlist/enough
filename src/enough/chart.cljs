@@ -16,14 +16,15 @@
     (multimap (mapcat get-year-ev-pairs life-events))))
 
 (defn years-til-retirement
-  [{:keys [salary expenses rate-of-return cutoff life-events]}]
+  [{:keys [salary expenses rate-of-return initial-savings cutoff life-events]}]
   {:pre [(number? salary)
          (number? expenses)
          (number? rate-of-return)
+         (number? initial-savings)
          (not (nil? cutoff))]}
   (let [year->life-events (life-events-by-year life-events)]
     (loop [years []]
-      (let [balance (or (:balance (peek years)) 0)
+      (let [balance (or (:balance (peek years)) initial-savings)
             growth (* balance rate-of-return)
             this-year (count years)
             expense-breakdown (get year->life-events this-year)
