@@ -93,11 +93,13 @@
      (swap! state (apply-if-valid assoc ::app-state) :pending-event {:name "" :costs-per-year {}}))})
 
 (defmethod mutate 'event/update-pending-costs
-  [{:keys [state]} key {:keys [pending-index pending-cost]}]
+  [{:keys [state]} key {:keys [pending-index pending-cost pending-duration]}]
   {:pre [(not (nil? pending-cost))
-         (not (nil? pending-index))]}
+         (not (nil? pending-index))
+         (not (nil? pending-duration))]}
   (let [costs (get-in @state [:pending-event :costs-per-year])
-        new-costs (assoc costs pending-index pending-cost)]
+        expanded-cost (apply hash-map (interleave (range pending-index (+ pending-index pending-duration)) (repeat pending-cost)))
+        new-costs (merge costs expanded-cost)]
     {:action 
      (fn []
        (swap! state (apply-if-valid update-in ::app-state) [:pending-event] merge {:costs-per-year new-costs}))}))
@@ -221,7 +223,7 @@
   (render [this]
     (let [{:keys [name costs-per-year] :as pending} (:pending-event (om/props this))
           creating? (not (nil? pending))
-          {:keys [editing-name pending-cost pending-index]} (om/get-state this)]
+          {:keys [editing-name pending-cost pending-index pending-duration]} (om/get-state this)]
       (html
         (if (not creating?)
           [:button 
@@ -250,17 +252,21 @@
             [:label "Cost of event:"]
             [:input {:value (or pending-cost "") :type "text" :onChange (track-in this :pending-cost)}]]
            [:div
+            [:label "Recurring for how many years?"]
+            [:input {:value (or pending-duration "1") :type "text" :onChange (track-in this :pending-duration)}]]
+           [:div
             [:label "Years from now:"]
             [:input {:value (or pending-index "") :type "text" :onChange (track-in this :pending-index)}]
             [:button 
              {:onClick 
               #(if (and pending-cost pending-index)
                 (let [pc (js/Number pending-cost)
-                      pi (js/Number pending-index)]
+                      pi (js/Number pending-index)
+                      pd (js/Number pending-duration)]
                 (do
                   (om/transact! this 
-                    `[(event/update-pending-costs {:pending-cost ~pc :pending-index ~pi})])
-                  (om/update-state! this dissoc :pending-cost :pending-index))))}
+                    `[(event/update-pending-costs {:pending-cost ~pc :pending-index ~pi :pending-duration ~pd})])
+                  (om/update-state! this dissoc :pending-cost :pending-index :pending-duration))))}
              "Add another cost"]
             [:button {:onClick #(om/transact! this '[(events/cancel-pending)])} "Cancel"]
             [:button 
