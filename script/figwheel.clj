@@ -19,7 +19,7 @@
      :figwheel true
      :source-paths ["src"]
      :compiler {:optimizations :advanced
-                :output-to "resources/public/js/main.js"
-                :source-map "resources/public/js/main.js.map"}}]})
+                :output-to "resources/public/js/main-opt.js"
+                :source-map "resources/public/js/main-opt.js.map"}}]})
 
 (ra/cljs-repl)

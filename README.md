@@ -21,3 +21,5 @@ Todos:
 Set up a devcards harness so we can test the UI from particular init states.
 
 Set up a clojure.test suite for reads, mutations, and chart calculations.
+
+Understand where errors under advanced compilation are coming from.
