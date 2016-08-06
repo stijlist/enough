@@ -38,21 +38,21 @@
   (let [s @state]
     {:value (om/db->tree query (get s key) s)}))
 
-(defn multimap [kvs]
-  (let [assoc-val-as-set 
-        (fn [m [k v]]
-          (assoc m k (if-not (contains? m k) #{v} (conj (get m k) v))))]
-    (reduce assoc-val-as-set {} kvs)))
-
-(defn life-events-by-year [life-events]
-  (let [get-year-ev-pairs (fn [e] (for [k (-> e :costs-per-year keys)] [k e]))]
-    (multimap (mapcat get-year-ev-pairs life-events))))
-
 (defmethod read :life-events
   [{:keys [state query]} key params]
-  (let [s @state
-        life-events (om/db->tree query (get s key) s)]
-    {:value {:unindexed life-events :indexed (life-events-by-year life-events)}}))
+  (letfn [(assoc-set [m [k v]]
+            (if-not (contains? m k)
+              (assoc m k #{v}) 
+              (update m k conj v)))
+          (multimap [kvs]
+            (reduce assoc-set {} kvs))
+          (year-to-events [e] 
+            (for [k (-> e :costs-per-year keys)] [k e]))
+          (life-events-by-year [life-events]
+            (multimap (mapcat year-to-events life-events)))]
+    (let [s @state
+          life-events (om/db->tree query (get s key) s)]
+      {:value {:unindexed life-events :indexed (life-events-by-year life-events)}})))
 
 (def ident->chart-key
   {"Salary" :salary "Expenses" :expenses "Rate of return" :rate-of-return "Initial savings" :initial-savings})
