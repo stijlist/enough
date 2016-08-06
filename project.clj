@@ -8,5 +8,5 @@
                  [sablono "0.7.1"]
                  [cljsjs/react "15.1.0-0"]
                  [cljsjs/react-dom "15.1.0-0"]
-                 [org.omcljs/om "1.0.0-alpha36"]
+                 [org.omcljs/om "1.0.0-alpha41"]
                  [figwheel-sidecar "0.5.4" :scope "test"]])
