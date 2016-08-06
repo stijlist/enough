@@ -256,12 +256,11 @@
                    (om/transact! this `[(event/update-pending-name {:pending-name ~editing-name})])
                    (om/update-state! this dissoc :editing-name))}
                  "Save"]]
-
-               [:span 
-                (:name pending)
-                [:button 
-                 {:onClick #(om/update-state! this assoc :editing-name "")} 
-                "Edit"]])]
+              [:span 
+               (:name pending)
+               [:button 
+                {:onClick #(om/update-state! this assoc :editing-name "")} 
+               "Edit"]])]
            (when (not (empty? costs-per-year))
              [:div (render-costs-per-year costs-per-year)])
            [:div
