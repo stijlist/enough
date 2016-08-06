@@ -52,6 +52,8 @@
             (multimap (mapcat year-to-events life-events)))]
     (let [s @state
           life-events (om/db->tree query (get s key) s)]
+      ;; this is a kludge - :indexed should be metadata.
+      ;; TODO: figure out why metadata on ret value is being blown away
       {:value {:unindexed life-events :indexed (life-events-by-year life-events)}})))
 
 (def ident->chart-key
