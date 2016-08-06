@@ -30,7 +30,7 @@
                   (>= this-year cutoff)
                   (>= growth expenses)
                   (< balance 0))
-          next (conj! years (Year. this-year new-balance growth expenses))]
+          next (conj! years (Year. this-year new-balance growth total-costs))]
       (if done?
         {:max-bar-value (+ total-costs new-balance) :data (persistent! next) :num-years this-year}
         (recur next new-balance (inc this-year))))))
