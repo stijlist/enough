@@ -62,10 +62,9 @@
   (let [s @state
         parameters (om/db->tree '[*] (get s :parameters) s)
         pname->pvalue (into {} (map (juxt :name :value)) parameters)
-        focused (get s :focused-segments)
         chart (-> pname->pvalue
                 (set/rename-keys ident->chart-key)
-                (assoc :cutoff 65 :focused focused))]
+                (assoc :cutoff 65))]
     {:value chart}))
 
 (defmethod read :popovers
@@ -328,7 +327,6 @@
   Object
   (render [this]
     (let [{:keys [parameters chart life-events pending-event popovers] :as props} (om/props this)]
-      (prn (:indexed life-events))
       (html 
         [:div
          [:div (map parameter parameters)]
