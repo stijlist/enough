@@ -2,26 +2,13 @@
   (:require [om.dom :as dom]
             [om.next :as om :refer-macros [defui]]))
 
-(defn multimap [kvs]
-  (let [assoc-val-as-set 
-        (fn [m [k v]]
-          (assoc m k (if-not (contains? m k) #{v} (conj (get m k) v))))]
-    (reduce assoc-val-as-set {} kvs)))
-
-(defn life-events-by-year [life-events]
-  (let [get-year-ev-pairs (fn [e] (for [k (-> e :costs-per-year keys)] [k e]))]
-    (multimap (mapcat get-year-ev-pairs life-events))))
-
-(def year->life-events (memoize life-events-by-year))
-
 (defrecord Year [^number index ^number balance ^number income-growth ^number expenses])
 
 (defn years-til-retirement
-  [{:keys [^number salary ^number expenses ^number rate-of-return ^number initial-savings ^number cutoff life-events]}]
-  ;; year->life-events only needs to be recomputed when life-events change, pull out of ytr
+  [{:keys [^number salary ^number expenses ^number rate-of-return ^number initial-savings ^number cutoff life-events-index]}]
   (loop [years (transient []) balance initial-savings this-year 0]
     (let [growth (* balance rate-of-return)
-          expense-breakdown (get (year->life-events life-events) this-year)
+          expense-breakdown (get life-events-index this-year)
           get-costs-this-year (map #(get-in % [:costs-per-year this-year]))
           variable-costs (transduce get-costs-this-year + expense-breakdown)
           total-costs (+ expenses variable-costs)

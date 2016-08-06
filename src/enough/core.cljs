@@ -38,10 +38,21 @@
   (let [s @state]
     {:value (om/db->tree query (get s key) s)}))
 
+(defn multimap [kvs]
+  (let [assoc-val-as-set 
+        (fn [m [k v]]
+          (assoc m k (if-not (contains? m k) #{v} (conj (get m k) v))))]
+    (reduce assoc-val-as-set {} kvs)))
+
+(defn life-events-by-year [life-events]
+  (let [get-year-ev-pairs (fn [e] (for [k (-> e :costs-per-year keys)] [k e]))]
+    (multimap (mapcat get-year-ev-pairs life-events))))
+
 (defmethod read :life-events
   [{:keys [state query]} key params]
-  (let [s @state]
-    {:value (om/db->tree query (get s key) s)}))
+  (let [s @state
+        life-events (om/db->tree query (get s key) s)]
+    {:value {:unindexed life-events :indexed (life-events-by-year life-events)}}))
 
 (def ident->chart-key
   {"Salary" :salary "Expenses" :expenses "Rate of return" :rate-of-return "Initial savings" :initial-savings})
@@ -50,12 +61,11 @@
   [{:keys [state]} key params]
   (let [s @state
         parameters (om/db->tree '[*] (get s :parameters) s)
-        life-events (om/db->tree '[*] (get s :life-events) s)
         pname->pvalue (into {} (map (juxt :name :value)) parameters)
         focused (get s :focused-segments)
         chart (-> pname->pvalue
                 (set/rename-keys ident->chart-key)
-                (assoc :life-events life-events :cutoff 65 :focused focused))]
+                (assoc :cutoff 65 :focused focused))]
     {:value chart}))
 
 (defmethod read :popovers
@@ -318,15 +328,16 @@
   Object
   (render [this]
     (let [{:keys [parameters chart life-events pending-event popovers] :as props} (om/props this)]
+      (prn (:indexed life-events))
       (html 
         [:div
          [:div (map parameter parameters)]
          [:div
-           (map life-event life-events)
+           (map life-event (:unindexed life-events))
            (life-event-pending pending-event)]
          [:div {:style {:overflow "scroll" :max-width "100%" :max-height "100%"}}
           [:div (map render-popover popovers)]
-          (render-chart chart)]]))))
+          (render-chart (assoc chart :life-events-index (:indexed life-events)))]]))))
 
 (def parser (om/parser {:read read :mutate mutate}))
 (def reconciler (om/reconciler {:state init-data :parser parser}))
