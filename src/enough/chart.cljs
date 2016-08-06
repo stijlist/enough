@@ -143,8 +143,6 @@
       (map #(render-year (om/computed % chart-opts)) data))))
 
 (defui SavingsChart
-  static om/IQuery
-  (query [this] '[:chart])
   Object
   (render [this]
     (-> (om/props this)

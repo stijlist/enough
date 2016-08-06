@@ -311,9 +311,9 @@
   static om/IQuery
   (query [this]
     `[{:parameters ~(om/get-query Parameter)}
-      {:chart ~(om/get-query SavingsChart)}
       {:life-events ~(om/get-query LifeEvent)}
       {:popovers ~(om/get-query ExpensePopover)}
+      :chart
       :pending-event])
   Object
   (render [this]
