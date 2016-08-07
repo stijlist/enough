@@ -140,13 +140,19 @@
      (fn []
        (swap! state (apply-if-valid add-life-event ::app-state)))}))
 
-(defmethod mutate 'popovers/show
+(defmethod mutate 'popovers/toggle
   [{:keys [state]} key {:keys [ident] :as params}]
   (letfn [(add-popover [state p]
             (-> state
               (assoc-in [:popovers/by-ident ident] p)
-              (update :popovers conj [:popovers/by-ident ident])))]
-    {:action #(swap! state add-popover params)}))
+              (update :popovers conj [:popovers/by-ident ident])))
+          (remove-popover [state p]
+            (-> state
+              (update :popovers/by-ident dissoc ident)
+              (update :popovers (partial into [] (remove #{[:popovers/by-ident ident]})))))]
+    (let [shown? (get-in @state [:popovers/by-ident ident])
+          toggle (if-not shown? add-popover remove-popover)]
+      {:action #(swap! state toggle params)})))
 
 (defn coerce-to-type-of [orig v]
   (condp = (type orig)
@@ -246,19 +252,20 @@
            {:onClick #(om/transact! this '[(events/create-pending)])}
            "New life event"]
           [:div
+
            [:div
             [:label "Event name:"]
             (if editing-name
               [:span [:input {:value (or editing-name "") :type "text" :onChange (track-in this :editing-name)}]
-               [:button 
-                {:onClick 
+               [:button
+                {:onClick
                  (fn [] 
                    (om/transact! this `[(event/update-pending-name {:pending-name ~editing-name})])
                    (om/update-state! this dissoc :editing-name))}
                  "Save"]]
-              [:span 
+              [:span
                (:name pending)
-               [:button 
+               [:button
                 {:onClick #(om/update-state! this assoc :editing-name "")} 
                "Edit"]])]
            (when (not (empty? costs-per-year))
@@ -278,7 +285,6 @@
                 (let [pc (js/Number pending-cost)
                       pi (js/Number pending-index)
                       pd (js/Number pending-duration)]
-                (prn pending-duration)
                 (assert (not (zero? pd)))
                 (do
                   (om/transact! this 
@@ -307,7 +313,7 @@
          {:style 
           (merge
             position
-            {:position "relative"
+            {:position "absolute"
              :border "1px solid black"})}
          message]))))
 
@@ -335,9 +341,12 @@
            (map life-event (:unindexed life-events))
            (life-event-pending pending-event)]
          [:div {:style {:overflow "scroll" :max-width "100%" :max-height "100%"}}
-          [:div (map render-popover popovers)]
-          (render-chart (assoc chart :life-events-index (:indexed life-events)))]]))))
-
+          (map render-popover popovers)
+          (render-chart
+            (assoc chart
+              :life-events-index (:indexed life-events)
+              :toggle-popover! #(om/transact! this `[(popovers/toggle ~%) :popovers])))]]))))
+ 
 (def parser (om/parser {:read read :mutate mutate}))
 (def reconciler (om/reconciler {:state init-data :parser parser}))
 

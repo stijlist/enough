@@ -5,7 +5,7 @@
 (defrecord Year [^number index ^number balance ^number income-growth ^number expenses])
 
 (defn years-til-retirement
-  [{:keys [^number salary ^number expenses ^number rate-of-return ^number initial-savings ^number cutoff life-events-index]}]
+  [{:keys [^number salary ^number expenses ^number rate-of-return ^number initial-savings ^number cutoff life-events-index] :as input}]
   (loop [years (transient []) balance initial-savings this-year 0]
     (let [growth (* balance rate-of-return)
           expense-breakdown (get life-events-index this-year)
@@ -19,7 +19,10 @@
                   (< balance 0))
           next (conj! years (Year. this-year new-balance growth total-costs))]
       (if done?
-        {:max-bar-value (+ total-costs new-balance) :data (persistent! next) :num-years this-year}
+        (assoc input
+          :max-bar-value (+ total-costs new-balance)
+          :data (persistent! next)
+          :num-years this-year)
         (recur next new-balance (inc this-year))))))
 
 (defn linear-scale [[domain-start domain-end]
@@ -70,8 +73,9 @@
     [:years/by-index (:index props)])
   Object
   (render [this]
-    (let [{:keys [index balance expenses income-growth]} (om/props this)
-          {:keys [true-height bar-width y-scale text-offsets display-popover!]} (om/get-computed this)
+    (let [{:keys [index balance expenses income-growth] :as props} (om/props this)
+          {:keys [true-height bar-width y-scale text-offsets toggle-popover!]} (om/get-computed this)
+          {:keys [mouseover?]} (om/get-state this)
           scaled-b (y-scale balance)
           scaled-e (y-scale expenses)
           scaled-g (y-scale income-growth)]
@@ -91,9 +95,12 @@
 
         ;; render expenses
         (dom/g
-          #js {:transform (translate 0 (- scaled-b))} ;; align vertically with balance
+          #js {:transform (translate 0 (- scaled-b)) ;; align vertically with balance
+               :onMouseOver #(om/update-state! this assoc :mouseover? true)
+               :onMouseLeave  #(om/update-state! this assoc :mouseover? false)
+               :onClick #(toggle-popover! {:ident (om/ident this props) :message "Test" :position {:top (- true-height scaled-b) :left (* index bar-width)}})}
           (dom/rect
-            #js {:fill "lightcoral"
+            #js {:fill (if mouseover? "aquamarine" "lightcoral")
                  :y (- true-height scaled-e)
                  :height scaled-e
                  :width (dec bar-width)})
@@ -113,7 +120,7 @@
 
 (def render-year (om/factory YearUI {:keyfn :index}))
 
-(defn savings-chart [{:keys [max-bar-value data num-years]} {:keys [display-popover!] :as opts}]
+(defn savings-chart [{:keys [max-bar-value data num-years toggle-popover!]}]
   (let [pixels-per-thousand 0.5
         max-bar-height (* pixels-per-thousand (/ max-bar-value 1000))
         bar-width 40
@@ -122,7 +129,7 @@
          :y-scale (linear-scale [0 max-bar-value] [0 max-bar-height])
          :bar-width bar-width
          :text-offsets #js {:x (+ 7 (/ bar-width 2)) :y (- max-bar-height 3) :dy "0.15em"}
-         :display-popover! display-popover!}]
+         :toggle-popover! toggle-popover!}]
     (dom/svg
       #js {:className "chart"
            :height (str max-bar-height "px")
@@ -134,5 +141,4 @@
   (render [this]
     (-> (om/props this)
       years-til-retirement 
-      (savings-chart 
-        {:display-popover! #(om/transact! this `[(popovers/show ~%) :popovers])}))))
+      savings-chart)))
