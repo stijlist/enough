@@ -1,6 +1,10 @@
 (ns enough.chart
   (:require [om.dom :as dom]
-            [om.next :as om :refer-macros [defui]]))
+            [om.next :as om :refer-macros [defui]]
+            [goog.dom]
+            [goog.ui.Popup]
+            [goog.positioning.AnchoredPosition]
+            [goog.positioning.Corner]))
 
 (defrecord Year [^number index ^number balance ^number income-growth ^number expenses])
 
@@ -37,45 +41,23 @@
 (defn thousands->k [n]
   (str (int (/ n 1000)) "k"))
 
-(defn render-balance 
-  [{:keys [bar-width true-height y-scale text-offsets]}]
-  (fn [{:keys [index balance]}]
-    (let [height (y-scale balance)]
-      (dom/g
-        #js {:transform (translate (* index bar-width) 0)}
-        (dom/rect
-          #js {:fill "steelblue"
-               :y (- true-height height) 
-               :height height 
-               :width (dec bar-width)})
-        (dom/text
-          text-offsets (thousands->k balance))))))
-
-(defn render-income-growth
-  [{:keys [bar-width true-height y-scale text-offsets]}]
-  (fn [{:keys [index balance income-growth]}]
-    (let [scaled-bal (y-scale balance)
-          scaled-g (y-scale income-growth)]
-      (dom/g
-        #js {:transform
-             (translate (* index bar-width) (- (- scaled-bal scaled-g)))}
-        (dom/rect
-          #js {:fill "mediumaquamarine"
-               :y (- true-height scaled-g)
-               :height scaled-g
-               :width (dec bar-width)}
-          (when (> scaled-g 10)
-            (dom/text text-offsets (thousands->k income-growth))))))))
-
 (defui YearUI
   static om/Ident
   (ident [this props]
     [:years/by-index (:index props)])
   Object
+  (componentDidMount [this]
+    (let [content (goog.dom/getElement "popover")
+          target (dom/node this)
+          popup
+          (goog.ui.Popup.
+            content
+            (goog.positioning.AnchoredPosition. target goog.positioning.Corner.TOP_START))]
+      (om/update-state! this assoc :popup popup)))
   (render [this]
     (let [{:keys [index balance expenses income-growth] :as props} (om/props this)
           {:keys [true-height bar-width y-scale text-offsets toggle-popover!]} (om/get-computed this)
-          {:keys [mouseover?]} (om/get-state this)
+          {:keys [mouseover? popup]} (om/get-state this)
           scaled-b (y-scale balance)
           scaled-e (y-scale expenses)
           scaled-g (y-scale income-growth)]
@@ -97,8 +79,8 @@
         (dom/g
           #js {:transform (translate 0 (- scaled-b)) ;; align vertically with balance
                :onMouseOver #(om/update-state! this assoc :mouseover? true)
-               :onMouseLeave  #(om/update-state! this assoc :mouseover? false)
-               :onClick #(toggle-popover! {:ident (om/ident this props) :message "Test" :position {:top (- true-height scaled-b) :left (* index bar-width)}})}
+               :onMouseLeave #(om/update-state! this assoc :mouseover? false)
+               :onClick #(doto popup (.setPinnedCorner goog.positioning.Corner.BOTTOM_START) (.setVisible true) (.reposition))}
           (dom/rect
             #js {:fill (if mouseover? "aquamarine" "lightcoral")
                  :y (- true-height scaled-e)
