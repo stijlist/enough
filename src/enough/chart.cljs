@@ -56,7 +56,7 @@
       (om/update-state! this assoc :popup popup)))
   (render [this]
     (let [{:keys [index balance expenses income-growth] :as props} (om/props this)
-          {:keys [true-height bar-width y-scale text-offsets toggle-popover!]} (om/get-computed this)
+          {:keys [true-height bar-width y-scale text-offsets]} (om/get-computed this)
           {:keys [mouseover? popup]} (om/get-state this)
           scaled-b (y-scale balance)
           scaled-e (y-scale expenses)
@@ -102,7 +102,7 @@
 
 (def render-year (om/factory YearUI {:keyfn :index}))
 
-(defn savings-chart [{:keys [max-bar-value data num-years toggle-popover!]}]
+(defn savings-chart [{:keys [max-bar-value data num-years]}]
   (let [pixels-per-thousand 0.5
         max-bar-height (* pixels-per-thousand (/ max-bar-value 1000))
         bar-width 40
@@ -110,8 +110,7 @@
         {:true-height max-bar-height
          :y-scale (linear-scale [0 max-bar-value] [0 max-bar-height])
          :bar-width bar-width
-         :text-offsets #js {:x (+ 7 (/ bar-width 2)) :y (- max-bar-height 3) :dy "0.15em"}
-         :toggle-popover! toggle-popover!}]
+         :text-offsets #js {:x (+ 7 (/ bar-width 2)) :y (- max-bar-height 3) :dy "0.15em"}}]
     (dom/svg
       #js {:className "chart"
            :height (str max-bar-height "px")

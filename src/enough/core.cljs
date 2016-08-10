@@ -2,7 +2,6 @@
   (:require
    [enough.chart :as chart :refer [SavingsChart]]
    [goog.dom :as dom]
-   [om.dom :refer [node]]
    [clojure.set :as set]
    [cljs.spec :as s]
    [om.next :as om :refer-macros [defui]]
@@ -298,28 +297,8 @@
                 (om/transact! this `[(events/save-pending) :life-events :chart :pending-event]))}
              "Done"]]])))))
 
-(defui ExpensePopover
-  static om/IQuery
-  (query [this]
-    '[:message :position :ident])
-  static om/Ident
-  (ident [this props]
-    [:popovers/by-ident (:ident props)])
-  Object
-  (render [this]
-    (let [{:keys [message position]} (om/props this)]
-      (html
-        [:span 
-         {:style 
-          (merge
-            position
-            {:position "absolute"
-             :border "1px solid black"})}
-         message]))))
-
 (def parameter (om/factory Parameter {:keyfn :name}))
 (def render-chart (om/factory SavingsChart))
-(def render-popover (om/factory ExpensePopover))
 (def life-event (om/factory LifeEvent {:keyfn :name}))
 (def life-event-pending (om/factory PendingLifeEvent))
 
@@ -328,12 +307,11 @@
   (query [this]
     `[{:parameters ~(om/get-query Parameter)}
       {:life-events ~(om/get-query LifeEvent)}
-      {:popovers ~(om/get-query ExpensePopover)}
       :chart
       :pending-event])
   Object
   (render [this]
-    (let [{:keys [parameters chart life-events pending-event popovers] :as props} (om/props this)]
+    (let [{:keys [parameters chart life-events pending-event] :as props} (om/props this)]
       (html 
         [:div
          [:div (map parameter parameters)]
@@ -341,11 +319,8 @@
            (map life-event (:unindexed life-events))
            (life-event-pending pending-event)]
          [:div {:style {:overflow "scroll" :max-width "100%" :max-height "100%"}}
-          (map render-popover popovers)
           (render-chart
-            (assoc chart
-              :life-events-index (:indexed life-events)
-              :toggle-popover! #(om/transact! this `[(popovers/toggle ~%) :popovers])))]]))))
+            (assoc chart :life-events-index (:indexed life-events)))]]))))
  
 (def parser (om/parser {:read read :mutate mutate}))
 (def reconciler (om/reconciler {:state init-data :parser parser}))
