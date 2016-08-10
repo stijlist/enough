@@ -94,9 +94,13 @@
                :onMouseOver #(om/update-state! this assoc :mouseover? true)
                :onMouseLeave #(om/update-state! this assoc :mouseover? false)
                :onClick 
-               #(js/ReactDOM.render
-                  (render-breakdown {:breakdown breakdown :index index})
-                  (.getElement (doto popup (.setVisible true) (.reposition))))}
+               (fn [e]
+                 (js/ReactDOM.render
+                   (render-breakdown {:breakdown breakdown :index index})
+                   (.getElement popup))
+                 (doto popup 
+                   (.setVisible true)
+                   (.reposition)))}
           (dom/rect
             #js {:fill (if mouseover? "aquamarine" "lightcoral")
                  :y (- true-height scaled-e)
