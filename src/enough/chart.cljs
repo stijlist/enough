@@ -6,7 +6,7 @@
             [goog.positioning.AnchoredPosition]
             [goog.positioning.Corner]))
 
-(defrecord Year [^number index ^number balance ^number income-growth ^number expenses])
+(defrecord Year [^number index ^number balance ^number income-growth ^number expenses breakdown])
 
 (defn years-til-retirement
   [{:keys [^number salary ^number expenses ^number rate-of-return ^number initial-savings ^number cutoff life-events-index] :as input}]
@@ -21,7 +21,7 @@
                   (>= this-year cutoff)
                   (>= growth expenses)
                   (< balance 0))
-          next (conj! years (Year. this-year new-balance growth total-costs))]
+          next (conj! years (Year. this-year new-balance growth total-costs expense-breakdown))]
       (if done?
         (assoc input
           :max-bar-value (+ total-costs new-balance)
@@ -41,6 +41,17 @@
 (defn thousands->k [n]
   (str (int (/ n 1000)) "k"))
 
+(defui ExpenseBreakdown
+  Object
+  (render [this]
+    (let [{:keys [breakdown index]} (om/props this)]
+      (apply dom/div nil
+        (map
+          #(dom/div nil (:name %) " " (get-in % [:costs-per-year index]))
+          breakdown)))))
+
+(def render-breakdown (om/factory ExpenseBreakdown))
+
 (defui YearUI
   static om/Ident
   (ident [this props]
@@ -53,9 +64,11 @@
           (goog.ui.Popup.
             content
             (goog.positioning.AnchoredPosition. target goog.positioning.Corner.TOP_START))]
+      (.setPinnedCorner popup goog.positioning.Corner.BOTTOM_START)
       (om/update-state! this assoc :popup popup)))
+  ;; TODO: componentWillUnmount (clean up mutations to popover container div)
   (render [this]
-    (let [{:keys [index balance expenses income-growth] :as props} (om/props this)
+    (let [{:keys [index balance expenses income-growth breakdown] :as props} (om/props this)
           {:keys [true-height bar-width y-scale text-offsets]} (om/get-computed this)
           {:keys [mouseover? popup]} (om/get-state this)
           scaled-b (y-scale balance)
@@ -80,7 +93,10 @@
           #js {:transform (translate 0 (- scaled-b)) ;; align vertically with balance
                :onMouseOver #(om/update-state! this assoc :mouseover? true)
                :onMouseLeave #(om/update-state! this assoc :mouseover? false)
-               :onClick #(doto popup (.setPinnedCorner goog.positioning.Corner.BOTTOM_START) (.setVisible true) (.reposition))}
+               :onClick 
+               #(js/ReactDOM.render
+                  (render-breakdown {:breakdown breakdown :index index})
+                  (.getElement (doto popup (.setVisible true) (.reposition))))}
           (dom/rect
             #js {:fill (if mouseover? "aquamarine" "lightcoral")
                  :y (- true-height scaled-e)
