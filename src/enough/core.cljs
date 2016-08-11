@@ -3,20 +3,10 @@
    [enough.chart :as chart :refer [SavingsChart]]
    [goog.dom :as dom]
    [clojure.set :as set]
-   [cljs.spec :as s]
    [om.next :as om :refer-macros [defui]]
    [sablono.core :refer-macros [html]]))
 
 (enable-console-print!)
-
-(s/def ::pending-life-event (s/or :none nil? :some ::life-event))
-(s/def ::life-event
-  (s/keys :req-un [::name ::costs-per-year]))
-(s/def ::name string?)
-(s/def ::costs-per-year #(every? number? (keys %)))
-(s/def ::ident (s/tuple keyword? #(not (coll? %))))
-(s/def ::life-events (s/coll-of ::ident []))
-(s/def ::app-state (s/keys :req-un [::pending-event ::life-events ::popovers]))
 
 (def init-data
   {:parameters 
@@ -24,11 +14,8 @@
     {:name "Expenses" :value 30000 :editing? false}
     {:name "Rate of return" :value 0.04 :editing? false}
     {:name "Initial savings" :value 0 :editing? false}]
-   :life-events
-   [{:name "Moving!" :costs-per-year {0 2000 1 2000}}
-    {:name "Buy that Miata!" :costs-per-year {3 5000}}]
-   :pending-event nil
-   :popovers []})
+   :life-events []
+   :event-form {:creating? false}})
 
 (defmulti read om/dispatch)
 
@@ -37,8 +24,7 @@
   (let [s @state]
     {:value (om/db->tree query (get s key) s)}))
 
-(defmethod read :life-events
-  [{:keys [state query]} key params]
+(defn life-events-by-year [life-events]
   (letfn [(assoc-set [m [k v]]
             (if-not (contains? m k)
               (assoc m k #{v}) 
@@ -46,17 +32,22 @@
           (multimap [kvs]
             (reduce assoc-set {} kvs))
           (year-to-events [e] 
-            (for [k (-> e :costs-per-year keys)] [k e]))
-          (life-events-by-year [life-events]
-            (multimap (mapcat year-to-events life-events)))]
-    (let [s @state
-          life-events (om/db->tree query (get s key) s)]
-      ;; this is a kludge - :indexed should be metadata.
-      ;; TODO: figure out why metadata on ret value is being blown away
-      {:value {:unindexed life-events :indexed (life-events-by-year life-events)}})))
+            (for [k (-> e :costs-per-year keys)] [k e]))]
+            (multimap (mapcat year-to-events life-events))))
+
+(defmethod read :life-events
+  [{:keys [state query]} key params]
+  (let [s @state
+        ret (om/db->tree query (get s key) s)]
+    (prn "re-read life event key" ret)
+    {:value ret}))
 
 (def ident->chart-key
   {"Salary" :salary "Expenses" :expenses "Rate of return" :rate-of-return "Initial savings" :initial-savings})
+
+(defmethod read :event-form
+  [{:keys [state]} key params]
+  {:value (get @state :event-form)})
 
 (defmethod read :chart
   [{:keys [state]} key params]
@@ -68,90 +59,32 @@
                 (assoc :cutoff 65))]
     {:value chart}))
 
-(defmethod read :popovers
-  [{:keys [state]} key params]
-  (let [s @state
-        popovers (om/db->tree '[*] (get s :popovers) s)]
-    {:value popovers}))
-
-(defmethod read :pending-event
-  [{:keys [state]} key params]
-  {:value (:pending-event @state)})
-
 (defmulti mutate om/dispatch)
-
-(defn apply-if-valid [f spec]
-  (fn [state & args]
-    (let [state' (apply f state args)]
-      (if (s/valid? spec state') 
-        state'
-        (do
-          (println "Backing out transaction due to spec failure:")
-          (s/explain spec state')
-          state)))))
 
 (defmethod mutate 'parameters/update
   [{:keys [state]} key {:keys [name] :as params}]
   {:pre [(string? name)]}
   {:action
    (fn []
-     (swap! state (apply-if-valid update-in ::app-state) [:parameters/by-name name] (fn [old] (merge old params))))})
+     (swap! state update-in [:parameters/by-name name] (fn [old] (merge old params))))})
 
-(defmethod mutate 'events/create-pending
+(defmethod mutate 'events/new
+  [{:keys [state]} key {:keys [name] :as params}]
+  {:action #(swap! state assoc-in [:event-form :creating?] true)})
+
+(defmethod mutate 'events/cancel
   [{:keys [state]} key params]
-  {:action
-   (fn []
-     (swap! state (apply-if-valid assoc ::app-state) :pending-event {:name "" :costs-per-year {}}))})
+  {:action #(swap! state assoc :creating? false)})
 
-(defmethod mutate 'event/update-pending-costs
-  [{:keys [state]} key {:keys [pending-index pending-cost pending-duration]}]
-  {:pre [(not (nil? pending-cost))
-         (not (nil? pending-index))
-         (not (nil? pending-duration))]}
-  (let [costs (get-in @state [:pending-event :costs-per-year])
-        datrange (range pending-index (+ pending-index pending-duration))
-        kvs (interleave datrange (repeat pending-cost))
-        expanded-cost (apply hash-map kvs)
-        new-costs (merge costs expanded-cost)]
-    {:action 
-     (fn []
-       (swap! state (apply-if-valid update-in ::app-state) [:pending-event] merge {:costs-per-year new-costs}))}))
-
-(defmethod mutate 'event/update-pending-name
-  [{:keys [state]} key {:keys [pending-name] :as params}]
-  {:action 
-   (fn []
-     (swap! state (apply-if-valid update-in ::app-state) [:pending-event] merge {:name pending-name}))})
-
-(defmethod mutate 'events/cancel-pending
+(defmethod mutate 'events/save
   [{:keys [state]} key params]
-  {:action #(swap! state assoc :pending-event nil)})
-
-(defmethod mutate 'events/save-pending
-  [{:keys [state]} key params]
-  (let [pending (:pending-event @state)
-        ident [:life-events/by-name (:name pending)]
+  (let [pending params
+        ident [:life-events/by-name (:name params)]
         add-life-event #(-> %
                           (assoc-in ident pending)
                           (update :life-events conj ident)
-                          (assoc :pending-event nil))]
-    {:action
-     (fn []
-       (swap! state (apply-if-valid add-life-event ::app-state)))}))
-
-(defmethod mutate 'popovers/toggle
-  [{:keys [state]} key {:keys [ident] :as params}]
-  (letfn [(add-popover [state p]
-            (-> state
-              (assoc-in [:popovers/by-ident ident] p)
-              (update :popovers conj [:popovers/by-ident ident])))
-          (remove-popover [state p]
-            (-> state
-              (update :popovers/by-ident dissoc ident)
-              (update :popovers (partial into [] (remove #{[:popovers/by-ident ident]})))))]
-    (let [shown? (get-in @state [:popovers/by-ident ident])
-          toggle (if-not shown? add-popover remove-popover)]
-      {:action #(swap! state toggle params)})))
+                          (assoc-in [:event-form :creating?] false))]
+    {:action #(swap! state add-life-event)}))
 
 (defn coerce-to-type-of [orig v]
   (condp = (type orig)
@@ -159,7 +92,7 @@
     js/String (js/String v)))
 
 (defn render-costs-per-year [costs-per-year]
-  (map 
+  (map
     (fn [[year cost]]
       [:li {:key year} (str "$" cost " " year " years from now")])
     costs-per-year))
@@ -173,10 +106,11 @@
     '[:name :costs-per-year])
   Object
   (render [this]
-    (let [{:keys [name costs-per-year]} (om/props this)
+    (let [{:keys [name costs-per-year] :as props} (om/props this)
           {:keys [expanded?]} (om/get-state this)
           total-cost (reduce + (vals costs-per-year))
           expanded? (or expanded? false)]
+      (prn "re-render LifeEvent" props)
       (html 
         [:div 
          [:div
@@ -234,93 +168,81 @@
                       :chart])))}
               "Save"]])]))))
 
-(defui PendingLifeEvent
+(defui LifeEventForm
   static om/IQuery
   (query [this]
-    [:pending-event])
+    [:creating?])
   Object
   (initLocalState [this]
-    {:editing-name false :pending-cost "0" :pending-index "0" :pending-duration "1"})
+    {:name "" :cost "0" :index "0" :duration "1" :costs-per-year {}})
   (render [this]
-    (let [{:keys [name costs-per-year] :as pending} (:pending-event (om/props this))
-          creating? (not (nil? pending))
-          {:keys [editing-name pending-cost pending-index pending-duration]} (om/get-state this)]
+    (let [{:keys [creating?] :as props} (om/props this)
+          {:keys [name cost index duration costs-per-year] :as pending} (om/get-state this)
+          ;; name is non-empty, and cost, index, and duration are all numbers
+          valid?
+          (and (not (empty? name))
+            (every? (comp not js/isNaN js/parseInt) [cost index duration])
+            #_(some #{cost} (vals (get pending :costs-per-year))))]
+
+      (prn "re-render form" props)
       (html
         (if (not creating?)
+          ;; expand form
           [:button 
-           {:onClick #(om/transact! this '[(events/create-pending)])}
+           {:onClick #(om/transact! this '[(events/new)])}
            "New life event"]
+          ;; form
+          ;; TODO: enable form submit as soon as event is valid
           [:div
-
            [:div
             [:label "Event name:"]
-            (if editing-name
-              [:span [:input {:value (or editing-name "") :type "text" :onChange (track-in this :editing-name)}]
-               [:button
-                {:onClick
-                 (fn [] 
-                   (om/transact! this `[(event/update-pending-name {:pending-name ~editing-name})])
-                   (om/update-state! this dissoc :editing-name))}
-                 "Save"]]
-              [:span
-               (:name pending)
-               [:button
-                {:onClick #(om/update-state! this assoc :editing-name "")} 
-               "Edit"]])]
+            [:input {:value name :type "text" :onChange (track-in this :name)}]]
            (when (not (empty? costs-per-year))
              [:div (render-costs-per-year costs-per-year)])
            [:div
             [:label "Cost of event:"]
-            [:input {:value (or pending-cost "") :type "text" :onChange (track-in this :pending-cost)}]]
-           [:div
-            [:label "Recurring for how many years?"]
-            [:input {:value (or pending-duration "1") :type "text" :onChange (track-in this :pending-duration)}]]
+            [:input {:value cost :type "text" :onChange (track-in this :cost)}]]
            [:div
             [:label "Years from now:"]
-            [:input {:value (or pending-index "") :type "text" :onChange (track-in this :pending-index)}]
+            [:input {:value index :type "text" :onChange (track-in this :index)}]]
+           [:div
+            [:label "Recurring for how many years?"]
+            [:input {:value duration :type "text" :onChange (track-in this :duration)}]]
+           [:div
+            [:button {:onClick #(om/update-state! this update :costs-per-year assoc (js/parseInt index) (js/parseInt cost))} "Add another cost"]
+            [:button {:onClick #(om/transact! this '[(events/cancel)])} "Cancel"]
             [:button 
-             {:onClick 
-              #(if (and pending-cost pending-index)
-                (let [pc (js/Number pending-cost)
-                      pi (js/Number pending-index)
-                      pd (js/Number pending-duration)]
-                (assert (not (zero? pd)))
-                (do
-                  (om/transact! this 
-                    `[(event/update-pending-costs {:pending-cost ~pc :pending-index ~pi :pending-duration ~pd})])
-                  (om/update-state! this dissoc :pending-cost :pending-index :pending-duration))))}
-             "Add another cost"]
-            [:button {:onClick #(om/transact! this '[(events/cancel-pending)])} "Cancel"]
-            [:button 
-             {:onClick 
-              #(when pending
-                (om/transact! this `[(events/save-pending) :life-events :chart :pending-event]))}
+             {:disabled (not valid?)
+              :onClick 
+              #(do 
+                 (om/set-state! this {:name "" :cost "0" :index "0" :duration "1" :costs-per-year {}})
+                 (om/transact! this `[(events/save ~(om/get-state this)) :life-events :chart]))}
              "Done"]]])))))
 
 (def parameter (om/factory Parameter {:keyfn :name}))
 (def render-chart (om/factory SavingsChart))
 (def life-event (om/factory LifeEvent {:keyfn :name}))
-(def life-event-pending (om/factory PendingLifeEvent))
+(def life-event-form (om/factory LifeEventForm))
 
 (defui Root
   static om/IQuery
   (query [this]
     `[{:parameters ~(om/get-query Parameter)}
       {:life-events ~(om/get-query LifeEvent)}
-      :chart
-      :pending-event])
+      {:event-form ~(om/get-query LifeEventForm)}
+      :chart])
   Object
   (render [this]
-    (let [{:keys [parameters chart life-events pending-event] :as props} (om/props this)]
+    (let [{:keys [parameters chart life-events event-form] :as props} (om/props this)]
       (html 
         [:div
          [:div (map parameter parameters)]
          [:div
-           (map life-event (:unindexed life-events))
-           (life-event-pending pending-event)]
+           (map life-event life-events)
+           (life-event-form event-form)]
          [:div {:style {:overflow "scroll" :max-width "100%" :max-height "100%"}}
           (render-chart
-            (assoc chart :life-events-index (:indexed life-events)))]]))))
+            (assoc chart :life-events-index (life-events-by-year life-events)))]]))))
  
 (def parser (om/parser {:read read :mutate mutate}))
 (def reconciler (om/reconciler {:state init-data :parser parser}))
