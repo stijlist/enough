@@ -1,4 +1,4 @@
-(ns enough.tests
-  (:require [cljs.test :refer-macros [run-tests]]))
+(ns ^:figwheel-always enough.tests
+  (:require [clojure.test :refer [run-tests]]))
 
 (enable-console-print!)
