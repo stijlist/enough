@@ -233,15 +233,15 @@
   Object
   (render [this]
     (let [{:keys [parameters chart life-events event-form] :as props} (om/props this)]
-      (html 
-        [:div
-         [:div (map parameter parameters)]
-         [:div
-           (map life-event life-events)
-           (life-event-form event-form)]
-         [:div {:style {:overflow "scroll" :max-width "100%" :max-height "100%"}}
+      (dom/div nil
+        (apply dom/div nil (map parameter parameters))
+        (dom/div nil
+          (apply dom/div nil 
+            (map life-event life-events))
+          (life-event-form event-form))
+        (dom/div #js {:style #js {:overflow "scroll" :maxWidth "100%" :maxHeight "100%"}}
           (render-chart
-            (assoc chart :life-events-index (life-events-by-year life-events)))]]))))
+            (assoc chart :life-events-index (life-events-by-year life-events))))))))
  
 (def parser (om/parser {:read read :mutate mutate}))
 (def reconciler (om/reconciler {:state init-data :parser parser}))
