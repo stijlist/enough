@@ -4,8 +4,7 @@
    [goog.dom :as gdom]
    [clojure.set :as set]
    [om.dom :as dom]
-   [om.next :as om :refer-macros [defui]]
-   [sablono.core :refer-macros [html]]))
+   [om.next :as om :refer-macros [defui]]))
 
 (enable-console-print!)
 
