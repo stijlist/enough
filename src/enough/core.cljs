@@ -33,7 +33,7 @@
             (reduce assoc-set {} kvs))
           (year-to-events [e] 
             (for [k (-> e :costs-per-year keys)] [k e]))]
-            (multimap (mapcat year-to-events life-events))))
+    (multimap (mapcat year-to-events life-events))))
 
 (defmethod read :life-events
   [{:keys [state query]} key params]
