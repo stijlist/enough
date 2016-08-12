@@ -65,6 +65,7 @@
             content
             (goog.positioning.AnchoredPosition. target goog.positioning.Corner.TOP_START))]
       (.setPinnedCorner popup goog.positioning.Corner.BOTTOM_START)
+      (.setMargin popup 0 0 10 0)
       (om/update-state! this assoc :popup popup)))
   ;; TODO: componentWillUnmount (clean up mutations to popover container div)
   (render [this]
