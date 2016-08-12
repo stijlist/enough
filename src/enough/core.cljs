@@ -177,7 +177,7 @@
   (render [this]
     (let [{:keys [creating?] :as props} (om/props this)
           {:keys [name cost index duration costs-per-year] :as pending} (om/get-state this)
-          ;; name is non-empty, and cost, index, and duration are all numbers
+          ;; TODO: use clojure.spec to validate fields and parse out values
           valid?
           (and (not (empty? name))
             (every? (comp not js/isNaN js/parseInt) [cost index duration])
