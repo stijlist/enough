@@ -1,6 +1,5 @@
 (ns enough.cards
   (:require 
-    [enough.cards.macros :refer [atom-named]]
     [enough.ui :refer [LifeEventForm]]
     [clojure.set :as set]
     [goog.dom :refer [append createElement getElement]]
@@ -50,18 +49,18 @@
           (prn "changed:" (select-keys new (set/intersection old-keys new-keys))))))
     (om/add-root! reconciler component root-div)))
 
-(card 
+(card
   :name "event-form"
   :component LifeEventForm
   :init-state {:creating? false}
-  :read  (fn [{:keys [state] :as env} key params] {:value (get @state key)})
-  :mutate 
+  :read (fn [{:keys [state]} key params] {:value (get @state key)})
+  :mutate
   (fn [{:keys [state] :as env} key params]
     {:action
      (condp = key
        'events/new #(swap! state assoc :creating? true)
        'events/cancel #(swap! state assoc :creating? false)
-       'events/save 
+       'events/save
        #(let [add-event
               (fn [state]
                 (-> state
