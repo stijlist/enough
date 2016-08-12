@@ -1,6 +1,4 @@
-(ns ^:figwheel-always enough.tests
-  (:require [cljs.test :refer-macros [run-tests]]
-            enough.segment-test))
+(ns enough.tests
+  (:require [cljs.test :refer-macros [run-tests]]))
 
 (enable-console-print!)
-(run-tests 'enough.segment-test)
