@@ -1,8 +1,8 @@
 (ns enough.core
   (:require
    [enough.chart :as chart :refer [SavingsChart]]
-   [goog.dom :as gdom]
    [clojure.set :as set]
+   [goog.dom :as gdom]
    [om.dom :as dom]
    [om.next :as om :refer-macros [defui]]))
 
