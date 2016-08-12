@@ -145,28 +145,29 @@
   (render [this]
     (let [{:keys [name value editing?] :as props} (om/props this)
           {:keys [field-value] :as state} (om/get-state this)]
-     (html 
-       [:div nil
-        [:span (str name ": " value)] 
+      (dom/div nil
+        (dom/span nil (str name ": " value))
         (if (not editing?)
-          [:button {:onClick #(om/transact! this `[(parameters/update {:name ~name :editing? true})])} "Edit"]
-          [:div 
-            [:label "New value:"] 
-            [:input 
-             {:type "text" 
-              :value (or field-value value)
-              :onChange (track-in this :field-value)}]
-            [:button 
-             {:onClick 
-              (fn [e]
-                (let [new-value (coerce-to-type-of value field-value)]
-                  (om/transact! this 
-                    `[(parameters/update 
-                        {:name ~name 
-                         :value ~new-value 
-                         :editing? false}) 
-                      :chart])))}
-              "Save"]])]))))
+          (dom/button
+            #js {:onClick #(om/transact! this `[(parameters/update {:name ~name :editing? true})])}
+            "Edit")
+          (dom/div nil
+            (dom/label "New value:")
+            (dom/input
+              #js {:type "text"
+                   :value (or field-value value)
+                   :onChange (track-in this :field-value)})
+            (dom/button
+              #js {:onClick
+                   (fn [e]
+                     (let [new-value (coerce-to-type-of value field-value)]
+                       (om/transact! this 
+                         `[(parameters/update 
+                             {:name ~name 
+                              :value ~new-value 
+                              :editing? false}) 
+                           :chart])))}
+              "Save")))))))
 
 (defui LifeEventForm
   static om/IQuery
