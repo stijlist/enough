@@ -1,8 +1,9 @@
 (ns enough.core
   (:require
    [enough.chart :as chart :refer [SavingsChart]]
-   [goog.dom :as dom]
+   [goog.dom :as gdom]
    [clojure.set :as set]
+   [om.dom :as dom]
    [om.next :as om :refer-macros [defui]]
    [sablono.core :refer-macros [html]]))
 
@@ -111,24 +112,23 @@
           total-cost (reduce + (vals costs-per-year))
           expanded? (or expanded? false)]
       (prn "re-render LifeEvent" props)
-      (html 
-        [:div 
-         [:div
+      (apply dom/div nil
+        (dom/div nil
           (str name " $" total-cost " total. ")
           (if (not expanded?)
-            [:button
-             {:onClick 
-              (fn [e] 
-                (.preventDefault e)
-                (om/set-state! this {:expanded? true}))}
-             "Summary"]
-            [:button
-             {:onClick
-              (fn [e]
-                (.preventDefault e)
-                (om/set-state! this {:expanded? false}))}
-             "Collapse"])]
-           (if expanded? (render-costs-per-year costs-per-year))]))))
+            (dom/button
+              #js {:onClick 
+                   (fn [e] 
+                     (.preventDefault e)
+                     (om/set-state! this {:expanded? true}))}
+              "Summary")
+            (dom/button
+              #js {:onClick
+                   (fn [e]
+                     (.preventDefault e)
+                     (om/set-state! this {:expanded? false}))}
+              "Collapse")))
+        (if expanded? (render-costs-per-year costs-per-year))))))
 
 (defn track-in [component k]
   (fn [e]
@@ -247,4 +247,4 @@
 (def parser (om/parser {:read read :mutate mutate}))
 (def reconciler (om/reconciler {:state init-data :parser parser}))
 
-(om/add-root! reconciler Root (dom/getElement "app"))
+(om/add-root! reconciler Root (gdom/getElement "app"))
