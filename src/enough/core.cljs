@@ -65,8 +65,7 @@
   [{:keys [state]} key {:keys [name] :as params}]
   {:pre [(string? name)]}
   {:action
-   (fn []
-     (swap! state update-in [:parameters/by-name name] (fn [old] (merge old params))))})
+   #(swap! state update-in [:parameters/by-name name] (fn [old] (merge old params)))})
 
 (defmethod mutate 'events/new
   [{:keys [state]} key {:keys [name] :as params}]
