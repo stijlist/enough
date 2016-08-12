@@ -1,7 +1,7 @@
 (require '[figwheel-sidecar.repl :as r]
          '[figwheel-sidecar.repl-api :as ra])
 
-(def builds (filter #{"dev" "prod"} *command-line-args*))
+(def builds (filter #{"dev" "prod" "cards"} *command-line-args*))
 
 (ra/start-figwheel!
   {:figwheel-options {}
@@ -20,6 +20,14 @@
      :source-paths ["src"]
      :compiler {:optimizations :advanced
                 :output-to "resources/public/js/main-opt.js"
-                :source-map "resources/public/js/main-opt.js.map"}}]})
+                :source-map "resources/public/js/main-opt.js.map"}}
+    {:id "cards"
+     :figwheel true
+     :source-paths ["src"]
+     :compiler {:main 'enough.cards
+                :asset-path "js"
+                :output-to "resources/public/js/cards.js"
+                :output-dir "resources/public/js"
+                :verbose true}}]})
 
 (ra/cljs-repl)

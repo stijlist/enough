@@ -45,7 +45,8 @@
   Object
   (render [this]
     (let [{:keys [breakdown index]} (om/props this)]
-      (apply dom/div nil
+      (apply dom/div 
+        #js {:style #js {"padding" "3px" "border" "1px solid black" "border-radius" ".125rem"}}
         (map
           #(dom/div nil (:name %) " " (get-in % [:costs-per-year index]))
           breakdown)))))
