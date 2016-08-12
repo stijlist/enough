@@ -23,7 +23,7 @@
                 :source-map "resources/public/js/main-opt.js.map"}}
     {:id "cards"
      :figwheel true
-     :source-paths ["src"]
+     :source-paths ["src" "cards"]
      :compiler {:main 'enough.cards
                 :asset-path "js"
                 :output-to "resources/public/js/cards.js"
