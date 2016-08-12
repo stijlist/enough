@@ -74,7 +74,7 @@
 
 (defmethod mutate 'events/cancel
   [{:keys [state]} key params]
-  {:action #(swap! state assoc :creating? false)})
+  {:action #(swap! state assoc-in [:event-form :creating?] false)})
 
 (defmethod mutate 'events/save
   [{:keys [state]} key params]
@@ -182,7 +182,7 @@
           valid?
           (and (not (empty? name))
             (every? (comp not js/isNaN js/parseInt) [cost index duration])
-            #_(some #{cost} (vals (get pending :costs-per-year))))]
+            (not (empty? costs-per-year)))]
 
       (prn "re-render form" props)
       (html
@@ -209,14 +209,14 @@
             [:label "Recurring for how many years?"]
             [:input {:value duration :type "text" :onChange (track-in this :duration)}]]
            [:div
-            [:button {:onClick #(om/update-state! this update :costs-per-year assoc (js/parseInt index) (js/parseInt cost))} "Add another cost"]
+            [:button {:onClick #(om/update-state! this update :costs-per-year assoc (js/parseInt index) (js/parseInt cost))} "Add cost"]
             [:button {:onClick #(om/transact! this '[(events/cancel)])} "Cancel"]
             [:button 
              {:disabled (not valid?)
               :onClick 
               #(do 
-                 (om/set-state! this {:name "" :cost "0" :index "0" :duration "1" :costs-per-year {}})
-                 (om/transact! this `[(events/save ~(om/get-state this)) :life-events :chart]))}
+                 (om/transact! this `[(events/save ~(om/get-state this)) :life-events :chart])
+                 (om/set-state! this {:name "" :cost "0" :index "0" :duration "1" :costs-per-year {}}))}
              "Done"]]])))))
 
 (def parameter (om/factory Parameter {:keyfn :name}))
