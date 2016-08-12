@@ -42,11 +42,19 @@
   (str (int (/ n 1000)) "k"))
 
 (defui ExpenseBreakdown
+  static om/IQuery
+  (query [this]
+    '[:breakdown :index])
   Object
   (render [this]
-    (let [{:keys [breakdown index]} (om/props this)]
+    (let [{:keys [breakdown index] :as props} (om/props this)]
+      (prn "re-render ExpenseBreakdown:" props)
       (apply dom/div 
-        #js {:style #js {"padding" "3px" "border" "1px solid black" "border-radius" ".125rem"}}
+        #js {:style 
+             #js {"padding" "3px"
+                  "border" "1px solid black"
+                  "borderRadius" ".125rem"
+                  "maxWidth" "20em"}}
         (map
           #(dom/div nil (:name %) " " (get-in % [:costs-per-year index]))
           breakdown)))))

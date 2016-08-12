@@ -1,6 +1,7 @@
 (ns enough.cards
   (:require 
     [enough.ui :refer [LifeEventForm]]
+    [enough.chart :refer [ExpenseBreakdown]]
     [clojure.set :as set]
     [goog.dom :refer [append createElement getElement]]
     [om.next :as om]))
@@ -67,3 +68,13 @@
                   (update :life-events conj params)
                   (assoc :creating? false)))]
            (swap! state add-event)))}))
+
+(card
+  :name "expense-breakdown"
+  :component ExpenseBreakdown
+  :init-state {:breakdown [{:name "Test event" :costs-per-year {0 1000}}] :index 0}
+  :read (fn [{:keys [state]} key params]
+          (let [res (get @state key)]
+            (prn "naive read result:" res)
+            {:value res}))
+  :mutate #())
