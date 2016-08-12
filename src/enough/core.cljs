@@ -167,13 +167,20 @@
                            :chart])))}
               "Save")))))))
 
+(defn form-field [this label key]
+  (dom/div nil
+    (dom/label nil label)
+    (dom/input #js {:value (get (om/get-state this) key) :type "text" :onChange (track-in this key)})))
+
+(def init-form-state {:name "" :cost "0" :index "0" :duration "1" :costs-per-year {}})
+
 (defui LifeEventForm
   static om/IQuery
   (query [this]
     [:creating?])
   Object
   (initLocalState [this]
-    {:name "" :cost "0" :index "0" :duration "1" :costs-per-year {}})
+    init-form-state)
   (render [this]
     (let [{:keys [creating?] :as props} (om/props this)
           {:keys [name cost index duration costs-per-year] :as pending} (om/get-state this)
@@ -189,31 +196,27 @@
           #js {:onClick #(om/transact! this '[(events/new)])}
           "New life event")
         (dom/div nil
-          (dom/div nil
-            (dom/label nil "Event name:")
-            (dom/input #js {:value name :type "text" :onChange (track-in this :name)}))
+          (form-field this "Event name:" :name)
           (when (not (empty? costs-per-year))
             (dom/div nil (render-costs-per-year costs-per-year)))
-          (dom/div nil
-            (dom/label nil "Cost of event:")
-            (dom/input #js {:value cost :type "text" :onChange (track-in this :cost)}))
-          (dom/div nil
-            (dom/label nil "Years from now:")
-            (dom/input #js {:value index :type "text" :onChange (track-in this :index)}))
-          (dom/div nil
-            (dom/label nil "Recurring for how many years?")
-            (dom/input #js {:value duration :type "text" :onChange (track-in this :duration)}))
+          (form-field this "Cost of event:" :cost)
+          (form-field this "Years from now:" :index)
+          (form-field this "Recurring for how many years?" :duration)
           (dom/div nil
             (dom/button 
               #js {:onClick #(om/update-state! this update :costs-per-year assoc (js/parseInt index) (js/parseInt cost))}
               "Add cost")
-            (dom/button #js {:onClick #(om/transact! this '[(events/cancel)])} "Cancel")
+            (dom/button 
+              #js {:onClick 
+                   #(do 
+                     (om/transact! this '[(events/cancel)])
+                     (om/set-state! this init-form-state))} "Cancel")
             (dom/button
               #js {:disabled (not valid?)
                    :onClick
                    #(do 
                      (om/transact! this `[(events/save ~(om/get-state this)) :life-events :chart])
-                     (om/set-state! this {:name "" :cost "0" :index "0" :duration "1" :costs-per-year {}}))}
+                     (om/set-state! this init-form-state))}
               "Done")))))))
 
 (def parameter (om/factory Parameter {:keyfn :name}))
