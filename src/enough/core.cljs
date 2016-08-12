@@ -95,7 +95,7 @@
 (defn render-costs-per-year [costs-per-year]
   (map
     (fn [[year cost]]
-      [:li {:key year} (str "$" cost " " year " years from now")])
+      (dom/li #js {:key year} (str "$" cost " " year " years from now")))
     costs-per-year))
 
 (defui LifeEvent
@@ -186,39 +186,37 @@
             (not (empty? costs-per-year)))]
 
       (prn "re-render form" props)
-      (html
-        (if (not creating?)
-          ;; expand form
-          [:button 
-           {:onClick #(om/transact! this '[(events/new)])}
-           "New life event"]
-          ;; form
-          ;; TODO: enable form submit as soon as event is valid
-          [:div
-           [:div
-            [:label "Event name:"]
-            [:input {:value name :type "text" :onChange (track-in this :name)}]]
-           (when (not (empty? costs-per-year))
-             [:div (render-costs-per-year costs-per-year)])
-           [:div
-            [:label "Cost of event:"]
-            [:input {:value cost :type "text" :onChange (track-in this :cost)}]]
-           [:div
-            [:label "Years from now:"]
-            [:input {:value index :type "text" :onChange (track-in this :index)}]]
-           [:div
-            [:label "Recurring for how many years?"]
-            [:input {:value duration :type "text" :onChange (track-in this :duration)}]]
-           [:div
-            [:button {:onClick #(om/update-state! this update :costs-per-year assoc (js/parseInt index) (js/parseInt cost))} "Add cost"]
-            [:button {:onClick #(om/transact! this '[(events/cancel)])} "Cancel"]
-            [:button 
-             {:disabled (not valid?)
-              :onClick 
-              #(do 
-                 (om/transact! this `[(events/save ~(om/get-state this)) :life-events :chart])
-                 (om/set-state! this {:name "" :cost "0" :index "0" :duration "1" :costs-per-year {}}))}
-             "Done"]]])))))
+      (if (not creating?)
+        (dom/button 
+          #js {:onClick #(om/transact! this '[(events/new)])}
+          "New life event")
+        (dom/div nil
+          (dom/div nil
+            (dom/label nil "Event name:")
+            (dom/input #js {:value name :type "text" :onChange (track-in this :name)}))
+          (when (not (empty? costs-per-year))
+            (dom/div nil (render-costs-per-year costs-per-year)))
+          (dom/div nil
+            (dom/label nil "Cost of event:")
+            (dom/input #js {:value cost :type "text" :onChange (track-in this :cost)}))
+          (dom/div nil
+            (dom/label nil "Years from now:")
+            (dom/input #js {:value index :type "text" :onChange (track-in this :index)}))
+          (dom/div nil
+            (dom/label nil "Recurring for how many years?")
+            (dom/input #js {:value duration :type "text" :onChange (track-in this :duration)}))
+          (dom/div nil
+            (dom/button 
+              #js {:onClick #(om/update-state! this update :costs-per-year assoc (js/parseInt index) (js/parseInt cost))}
+              "Add cost")
+            (dom/button #js {:onClick #(om/transact! this '[(events/cancel)])} "Cancel")
+            (dom/button
+              #js {:disabled (not valid?)
+                   :onClick
+                   #(do 
+                     (om/transact! this `[(events/save ~(om/get-state this)) :life-events :chart])
+                     (om/set-state! this {:name "" :cost "0" :index "0" :duration "1" :costs-per-year {}}))}
+              "Done")))))))
 
 (def parameter (om/factory Parameter {:keyfn :name}))
 (def render-chart (om/factory SavingsChart))
