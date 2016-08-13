@@ -69,7 +69,7 @@
    #(swap! state update-in [:parameters/by-name name] (fn [old] (merge old params)))})
 
 (defmethod mutate 'events/new
-  [{:keys [state]} key {:keys [name] :as params}]
+  [{:keys [state]} key params]
   {:action #(swap! state assoc-in [:event-form :creating?] true)})
 
 (defmethod mutate 'events/cancel

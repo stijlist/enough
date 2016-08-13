@@ -1,5 +1,6 @@
 (ns enough.ui
   (:require
+   [clojure.spec :as s]
    [goog.dom]
    [om.dom :as dom]
    [om.next :as om :refer-macros [defui]]))
@@ -95,6 +96,18 @@
 
 (def init-form-state {:name "" :cost "0" :index "0" :duration "1" :costs-per-year {}})
 
+(s/def ::form-data (s/keys :req-un [::name ::cost ::index ::duration ::costs-per-year]))
+(s/def ::name not-empty)
+(s/def ::cost #(not (zero? %)))
+(s/def ::index number?)
+(s/def ::costs-per-year not-empty)
+
+(def messages
+  {::name "An event's name cannot be empty."
+   ::cost "An event's cost cannot be zero."
+   ::index "The event must be happening this year or in the future."
+   ::costs-per-year "You haven't added any costs. Click \"Add cost\" to save the cost you're editing before you click \"Done\"."})
+
 (defui LifeEventForm
   static om/IQuery
   (query [this]
@@ -105,7 +118,11 @@
   (render [this]
     (let [{:keys [creating?] :as props} (om/props this)
           {:keys [name cost index duration costs-per-year] :as pending} (om/get-state this)
-          ;; TODO: use clojure.spec to validate fields and parse out values
+          conformed (s/conform ::form-data pending)
+          errors (when (= conformed :cljs.spec/invalid)
+                   (s/explain-data ::form-data pending))
+          _ (prn conformed errors)
+          _ (prn (map (fn [{:keys [via]}] (get messages (last via))) (get errors :cljs.spec/problems)))
           valid?
           (and (not (empty? name))
             (every? (comp not js/isNaN js/parseInt) [cost index duration])
