@@ -10,34 +10,23 @@
 
 (def atoms (atom {}))
 
+(defn lazy-div [parent id]
+  (or (getElement id)
+    (let [div (doto (createElement "div") (aset "id" id))]
+      (append parent div)
+      div)))
+
 (defn card [& {:keys [name component init-state read mutate]}]
   (assert name "name must be provided")
-  (when-not (getElement "card-roots")
-    (append
-      (.-body js/document)
-      (doto 
-        (createElement "div")
-        (aset "id" "card-roots"))))
-  (when-not (getElement name)
-    (append
-      (getElement "card-roots")
-      (doto
-        (createElement "div")
-        (aset "id" name))))
-  (when-not (getElement (str name "-watch"))
-    (append
-      (getElement "card-roots")
-      (doto
-        (createElement "div")
-        (aset "id" (str name "-watch")))))
   (let [state
-        (or 
+        (or
           (get atoms name)
           (let [new (atom init-state)]
             (swap! atoms assoc name new)
             new))
-        root-div (getElement name)
-        watch-div (getElement (str name "-watch"))
+        all-roots (lazy-div (.-body js/document) "card-roots")
+        root-div (lazy-div all-roots name)
+        watch-div (lazy-div all-roots (str name "-watch"))
         update-watch #(aset watch-div "innerHTML" (str "<div>" % "</div>"))
         parser (om/parser {:read read :mutate mutate})
         reconciler (om/reconciler {:state state :parser parser})]
