@@ -49,15 +49,16 @@
   (render [this]
     (let [{:keys [breakdown index] :as props} (om/props this)]
       (prn "re-render ExpenseBreakdown:" props)
-      (apply dom/div 
-        #js {:style 
-             #js {"padding" "3px"
-                  "border" "1px solid black"
-                  "borderRadius" ".125rem"
-                  "maxWidth" "20em"}}
-        (map
-          #(dom/div nil (:name %) " " (get-in % [:costs-per-year index]))
-          breakdown)))))
+      (when breakdown
+        (apply dom/div 
+          #js {:style 
+               #js {"padding" "3px"
+                    "border" "1px solid black"
+                    "borderRadius" ".125rem"
+                    "maxWidth" "20em"}}
+          (map
+            #(dom/div nil (:name %) " " (get-in % [:costs-per-year index]))
+            breakdown))))))
 
 (def render-breakdown (om/factory ExpenseBreakdown))
 
