@@ -16,12 +16,12 @@
       (append parent div)
       div)))
 
-(defn card [& {:keys [name component init-state read mutate]}]
+(defn card [& {:keys [name component init read mutate]}]
   (assert name "name must be provided")
   (let [state
         (or
           (get atoms name)
-          (let [new (atom init-state)]
+          (let [new (atom init)]
             (swap! atoms assoc name new)
             new))
         all-roots (lazy-div (.-body js/document) "card-roots")
@@ -42,7 +42,7 @@
 (card
   :name "event-form"
   :component LifeEventForm
-  :init-state {:creating? false}
+  :init {:creating? false}
   :read (fn [{:keys [state]} key params] {:value (get @state key)})
   :mutate
   (fn [{:keys [state] :as env} key params]
@@ -61,7 +61,7 @@
 (card
   :name "expense-breakdown"
   :component ExpenseBreakdown
-  :init-state {:breakdown [{:name "Test event" :costs-per-year {0 1000}}] :index 0}
+  :init {:breakdown [{:name "Test event" :costs-per-year {0 1000}}] :index 0}
   :read (fn [{:keys [state]} key params]
           (let [res (get @state key)]
             (prn "naive read result:" res)
