@@ -9,7 +9,7 @@
    :all-builds
    [{:id "dev"
      :figwheel true
-     :source-paths ["src"]
+     :source-paths ["src" "test"]
      :compiler {:main 'enough.core
                 :asset-path "js"
                 :output-to "resources/public/js/main.js"
