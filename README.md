@@ -6,11 +6,11 @@ a financial journal
 
 Ideas:
 
-Make chart segments interactive. On mouseover, highlight and provide a breakdown of the expenses, revenue growth, or income for that segment.
-
 Unify the idea of a "parameter" with the idea of an "event" - parameters are events that occur in every period of the simulation.
 
 Provide more powerful event specifications - recurring events, periodic events, and events that change over time.
+
+Make the user interface for creating new life events accessible from the chart UI.
 
 Increase the granularity of the simulation from years to months.
 
@@ -20,10 +20,9 @@ Todos:
 
 Style the expense breakdown popover.
 
-Improve error messages and feedback while creating new life events.
-
-Set up a devcards harness so we can test the UI from particular init states.
-
 Set up a clojure.test suite for reads, mutations, and chart calculations.
 
-Understand where errors under advanced compilation are coming from.
+Archive:
+Make chart segments interactive. On mouseover, highlight and provide a breakdown of the expenses, revenue growth, or income for that segment. @done
+Improve error messages and feedback while creating new life events. @done
+Set up a devcards harness so we can test the UI from particular init states. @done
