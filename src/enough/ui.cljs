@@ -89,24 +89,36 @@
                            :chart])))}
               "Save")))))))
 
-(defn form-field [this label key]
-  (dom/div nil
-    (dom/label nil label)
-    (dom/input #js {:value (get (om/get-state this) key) :type "text" :onChange (track-in this key)})))
+(defn form-field [this label key errmap]
+  (let [value (get (om/get-state this) key)
+        errmsg (get errmap key)]
+    (dom/div nil
+      (dom/label nil label)
+      (dom/input #js {:value value :type "text" :onChange (track-in this key)})
+      (dom/span nil errmsg))))
 
 (def init-form-state {:name "" :cost "0" :index "0" :duration "1" :costs-per-year {}})
 
+(defn parse-int [s]
+  (let [parsed (js/parseInt s)]
+    (when-not (js/isNaN parsed) parsed)))
+
+(def parsed-nat? (comp nat-int? parse-int))
+
 (s/def ::form-data (s/keys :req-un [::name ::cost ::index ::duration ::costs-per-year]))
 (s/def ::name not-empty)
-(s/def ::cost #(not (zero? %)))
-(s/def ::index number?)
+(s/def ::cost parse-int)
+(s/def ::index (s/and parse-int parsed-nat?))
 (s/def ::costs-per-year not-empty)
 
 (def messages
-  {::name "An event's name cannot be empty."
-   ::cost "An event's cost cannot be zero."
-   ::index "The event must be happening this year or in the future."
-   ::costs-per-year "You haven't added any costs. Click \"Add cost\" to save the cost you're editing before you click \"Done\"."})
+  {:name "An event's name cannot be empty."
+   :cost "An event's cost cannot be zero."
+   :index "The event must be happening this year or in the future."
+   :costs-per-year "Click \"Add cost\" to save the cost you're editing."})
+
+(defn mapvals [f m]
+  (into {} (map (fn [[k v]] [k (f v)])) m))
 
 (defui LifeEventForm
   static om/IQuery
@@ -118,41 +130,51 @@
   (render [this]
     (let [{:keys [creating?] :as props} (om/props this)
           {:keys [name cost index duration costs-per-year] :as pending} (om/get-state this)
-          conformed (s/conform ::form-data pending)
-          errors (when (= conformed :cljs.spec/invalid)
+          form-data (s/conform ::form-data pending)
+          numeric-keys [:cost :index :duration]
+          errors (when (= form-data :cljs.spec/invalid)
                    (s/explain-data ::form-data pending))
-          _ (prn conformed errors)
-          _ (prn (map (fn [{:keys [via]}] (get messages (last via))) (get errors :cljs.spec/problems)))
-          valid?
-          (and (not (empty? name))
-            (every? (comp not js/isNaN js/parseInt) [cost index duration])
-            (not (empty? costs-per-year)))]
+          parsed-data (when-not errors
+                        (->> (select-keys form-data numeric-keys)
+                          (mapvals js/parseInt)
+                          (merge form-data)))
+          error-keys (into #{} (map (comp peek :in)) (get errors :cljs.spec/problems))
+          error-map (select-keys messages error-keys)]
 
       (prn "re-render form" props)
+
+      ;; button to create new life event
       (if (not creating?)
-        (dom/button 
+        (dom/button
           #js {:onClick #(om/transact! this '[(events/new)])}
           "New life event")
+
+        ;; forms for event name, cost, years from now, recurring
         (dom/div nil
-          (form-field this "Event name:" :name)
-          (when (not (empty? costs-per-year))
+          (form-field this "Event name:" :name error-map)
+          (when-not (empty? costs-per-year)
             (dom/div nil (render-costs-per-year costs-per-year)))
-          (form-field this "Cost of event:" :cost)
-          (form-field this "Years from now:" :index)
-          (form-field this "Recurring for how many years?" :duration)
+          (form-field this "Cost of event:" :cost error-map)
+          (form-field this "Years from now:" :index error-map)
+          (form-field this "Recurring for how many years?" :duration error-map)
+
+          ;; buttons: add cost, cancel, done
           (dom/div nil
-            (dom/button 
+            (dom/button
               #js {:onClick #(om/update-state! this update :costs-per-year assoc (js/parseInt index) (js/parseInt cost))}
               "Add cost")
-            (dom/button 
-              #js {:onClick 
-                   #(do 
+            (dom/button
+              #js {:onClick
+                   #(do
                      (om/transact! this '[(events/cancel)])
                      (om/set-state! this init-form-state))} "Cancel")
             (dom/button
-              #js {:disabled (not valid?)
+              #js {:style (when errors #js {:color "graytext"})
+                   :ref :done-button
+                   :onMouseOver #() ;; TODO - draw eye to errors
                    :onClick
-                   #(do 
-                     (om/transact! this `[(events/save ~(om/get-state this)) :life-events :chart])
+                   #(when-not errors
+                     (om/transact! this `[(events/save ~parsed-data) :life-events :chart])
                      (om/set-state! this init-form-state))}
-              "Done")))))))
+              "Done")
+            (get error-map :costs-per-year)))))))
