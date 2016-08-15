@@ -12,15 +12,25 @@ Provide more powerful event specifications - recurring events, periodic events, 
 
 Make the user interface for creating new life events accessible from the chart UI.
 
-Increase the granularity of the simulation from years to months.
+Implement something akin to exponential decay for the granularity of the simulation - forecast the next few days, the next few months, the next few years, and the next few decades.
 
 Come up with a strategy for optionally re-scaling the chart when updates to parameters make it too large or small to read.
 
+Enable the user to compare different possibilities - implement snapshot functionality, and display snapshots (perhaps as scaled-down versions of the chart UI).
+
 Todos:
 
-Style the expense breakdown popover.
+Move event form state out of component-local state.
 
-Set up a clojure.test suite for reads, mutations, and chart calculations.
+Align form fields and edit buttons.
+
+Differentiate the pending life event from the pending costs in the visual hierarchy of the life event form.
+
+Review the language used in the life event form - reduce the ambiguity of the state where no costs have been added yet.
+
+Differentiate the expense breakdown popover from the surrounding content.
+
+Set up a regression test suite for reads, mutations, and chart calculations.
 
 Archive:
 Make chart segments interactive. On mouseover, highlight and provide a breakdown of the expenses, revenue growth, or income for that segment. @done
