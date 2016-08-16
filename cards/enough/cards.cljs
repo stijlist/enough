@@ -8,7 +8,8 @@
 
 (enable-console-print!)
 
-(def atoms (atom {}))
+(defonce atoms (atom {}))
+
 
 (defn lazy-div [parent id]
   (or (getElement id)
@@ -20,7 +21,7 @@
   (assert name "name must be provided")
   (let [state
         (or
-          (get atoms name)
+          (get @atoms name)
           (let [new (atom init)]
             (swap! atoms assoc name new)
             new))
