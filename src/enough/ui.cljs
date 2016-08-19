@@ -157,7 +157,7 @@
         (dom/div #js {:className ""}
           (form-field this "Event name:" :name error-map)
           (when-not (empty? costs-per-year)
-            (dom/div nil (render-costs-per-year costs-per-year)))
+            (dom/div #js {:className "tr"} (render-costs-per-year costs-per-year)))
           (form-field this "Cost of event:" :cost error-map)
           (form-field this "Years from now:" :index error-map)
           (form-field this "Recurring (years)?" :duration error-map)
@@ -182,5 +182,4 @@
                      #(when-not errors
                        (om/transact! this `[(events/save ~parsed-data) :life-events :chart])
                        (om/set-state! this init-form-state))}
-                "Done"))
-            ))))))
+                "Done"))))))))
