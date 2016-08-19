@@ -1,4 +1,4 @@
-(ns enough.chart
+(ns enough.ui.chart
   (:require [om.dom :as dom]
             [om.next :as om :refer-macros [defui]]
             [goog.dom]

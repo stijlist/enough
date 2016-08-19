@@ -10,7 +10,7 @@
    [{:id "dev"
      :figwheel true
      :source-paths ["src" "test"]
-     :compiler {:main 'enough.core
+     :compiler {:main 'enough.root
                 :asset-path "js"
                 :output-to "resources/public/js/main.js"
                 :output-dir "resources/public/js"
