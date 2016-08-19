@@ -1,7 +1,7 @@
 # enough
 a financial journal
 
-![current state](https://raw.githubusercontent.com/stijlist/enough/master/screenshots/enough-2016-07-05.png)
+![current state](https://raw.githubusercontent.com/stijlist/enough/master/screenshots/enough-2016-08-19.png)
 
 
 Ideas:
@@ -22,8 +22,6 @@ Todos:
 
 Move event form state out of component-local state.
 
-Align form fields and edit buttons.
-
 Differentiate the pending life event from the pending costs in the visual hierarchy of the life event form.
 
 Review the language used in the life event form - reduce the ambiguity of the state where no costs have been added yet.
@@ -33,6 +31,7 @@ Differentiate the expense breakdown popover from the surrounding content.
 Set up a regression test suite for reads, mutations, and chart calculations.
 
 Archive:
+Align form fields and edit buttons. @done
 Make chart segments interactive. On mouseover, highlight and provide a breakdown of the expenses, revenue growth, or income for that segment. @done
 Improve error messages and feedback while creating new life events. @done
 Set up a devcards harness so we can test the UI from particular init states. @done
