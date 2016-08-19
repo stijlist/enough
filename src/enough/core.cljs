@@ -16,7 +16,7 @@
     {:name "Rate of return" :value 0.04 :editing? false}
     {:name "Initial savings" :value 0 :editing? false}]
    :life-events []
-   :event-form {:creating? false}})
+   :event-form {:creating? true}})
 
 (defmulti read om/dispatch)
 
@@ -104,11 +104,11 @@
       (dom/div 
         #js {:className "pa0 bg-near-white black-80"}
         (dom/h2 #js {:className "f4 bb w-50"} "Parameters")
-        (apply dom/div #js {:className ""} (map parameter parameters))
+        (dom/div nil (map parameter parameters))
         (dom/div #js {:className "w-50"}
           (dom/h2 #js {:className "f4 bb"} "Life events")
           (life-event-form event-form)
-          (apply dom/div nil 
+          (dom/div nil 
             (map life-event life-events)))
         (dom/div #js {:style #js {:overflow "scroll" :maxWidth "100%" :maxHeight "100%"}}
           (render-chart

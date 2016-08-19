@@ -93,10 +93,13 @@
 (defn form-field [this label key errmap]
   (let [value (get (om/get-state this) key)
         errmsg (get errmap key)]
-    (dom/div nil
-      (dom/label nil label)
-      (dom/input #js {:value value :type "text" :onChange (track-in this key)})
-      (dom/span nil errmsg))))
+    (dom/div #js {:className "cf w-100"}
+      (dom/div #js {:className "tr fl w-50-ns"}
+        (dom/label nil label))
+      (dom/div #js {:className "tr fl w-50-ns"}
+        (dom/input #js {:className "w-100 bg-near-white" :value value :type "text" :onChange (track-in this key)}))
+      (dom/div #js {:className "tr"}
+        (dom/span nil errmsg)))))
 
 (def init-form-state {:name "" :cost "0" :index "0" :duration "1" :costs-per-year {}})
 
@@ -113,10 +116,9 @@
 (s/def ::costs-per-year not-empty)
 
 (def messages
-  {:name "An event's name cannot be empty."
+  {:name "Enter a name for this event."
    :cost "An event's cost cannot be zero."
-   :index "The event must be happening this year or in the future."
-   :costs-per-year "Click \"Add cost\" to save the cost you're editing."})
+   :index "The event must be happening this year or in the future."})
 
 (defn mapvals [f m]
   (into {} (map (fn [[k v]] [k (f v)])) m))
@@ -147,37 +149,38 @@
       ;; button to create new life event
       (if (not creating?)
         (dom/div nil
-          (dom/div #js {:className "i pa1"} "None entered yet.")
           (dom/button
             #js {:onClick #(om/transact! this '[(events/new)])}
             "New"))
 
         ;; forms for event name, cost, years from now, recurring
-        (dom/div nil
+        (dom/div #js {:className ""}
           (form-field this "Event name:" :name error-map)
           (when-not (empty? costs-per-year)
             (dom/div nil (render-costs-per-year costs-per-year)))
           (form-field this "Cost of event:" :cost error-map)
           (form-field this "Years from now:" :index error-map)
-          (form-field this "Recurring for how many years?" :duration error-map)
+          (form-field this "Recurring (years)?" :duration error-map)
 
           ;; buttons: add cost, cancel, done
-          (dom/div nil
-            (dom/button
-              #js {:onClick #(om/update-state! this update :costs-per-year assoc (js/parseInt index) (js/parseInt cost))}
-              "Add cost")
-            (dom/button
-              #js {:onClick
-                   #(do
-                     (om/transact! this '[(events/cancel)])
-                     (om/set-state! this init-form-state))} "Cancel")
-            (dom/button
-              #js {:style (when errors #js {:color "graytext"})
-                   :ref :done-button
-                   :onMouseOver #() ;; TODO - draw eye to errors
-                   :onClick
-                   #(when-not errors
-                     (om/transact! this `[(events/save ~parsed-data) :life-events :chart])
-                     (om/set-state! this init-form-state))}
-              "Done")
-            (get error-map :costs-per-year)))))))
+          (dom/div #js {:className "tr"}
+            (dom/div #js {:className "mv1"}
+              (dom/button
+                #js {:onClick #(om/update-state! this update :costs-per-year assoc (js/parseInt index) (js/parseInt cost))}
+                "Add cost"))
+            (dom/div #js {:className "mv1"}
+              (dom/button
+                #js {:onClick
+                     #(do
+                       (om/transact! this '[(events/cancel)])
+                       (om/set-state! this init-form-state))} "Cancel")
+              (dom/button
+                #js {:style (when errors #js {:color "graytext"})
+                     :ref :done-button
+                     :onMouseOver #() ;; TODO - draw eye to errors
+                     :onClick
+                     #(when-not errors
+                       (om/transact! this `[(events/save ~parsed-data) :life-events :chart])
+                       (om/set-state! this init-form-state))}
+                "Done"))
+            ))))))
