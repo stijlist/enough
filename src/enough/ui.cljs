@@ -65,8 +65,9 @@
   (render [this]
     (let [{:keys [name value editing?] :as props} (om/props this)
           {:keys [field-value] :as state} (om/get-state this)]
-      (dom/div nil
-        (dom/span nil (str name ": " value))
+      (dom/div #js {:className "cf w-50"}
+        (dom/span #js {:className "fl w-50 tr"} (str name ": "))
+        (dom/span #js {:className "fl w-25 tl pl1"} value)
         (if (not editing?)
           (dom/button
             #js {:onClick #(om/transact! this `[(parameters/update {:name ~name :editing? true})])}
@@ -145,9 +146,11 @@
 
       ;; button to create new life event
       (if (not creating?)
-        (dom/button
-          #js {:onClick #(om/transact! this '[(events/new)])}
-          "New life event")
+        (dom/div nil
+          (dom/div #js {:className "i pa1"} "None entered yet.")
+          (dom/button
+            #js {:onClick #(om/transact! this '[(events/new)])}
+            "New"))
 
         ;; forms for event name, cost, years from now, recurring
         (dom/div nil

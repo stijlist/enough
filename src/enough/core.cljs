@@ -101,12 +101,15 @@
   Object
   (render [this]
     (let [{:keys [parameters chart life-events event-form] :as props} (om/props this)]
-      (dom/div nil
-        (apply dom/div nil (map parameter parameters))
-        (dom/div nil
+      (dom/div 
+        #js {:className "pa0 bg-near-white black-80"}
+        (dom/h2 #js {:className "f4 bb w-50"} "Parameters")
+        (apply dom/div #js {:className ""} (map parameter parameters))
+        (dom/div #js {:className "w-50"}
+          (dom/h2 #js {:className "f4 bb"} "Life events")
+          (life-event-form event-form)
           (apply dom/div nil 
-            (map life-event life-events))
-          (life-event-form event-form))
+            (map life-event life-events)))
         (dom/div #js {:style #js {:overflow "scroll" :maxWidth "100%" :maxHeight "100%"}}
           (render-chart
             (assoc chart :life-events-index (life-events-by-year life-events))))))))
