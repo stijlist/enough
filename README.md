@@ -16,6 +16,8 @@ Implement something akin to exponential decay for the granularity of the simulat
 
 Come up with a strategy for optionally re-scaling the chart when updates to parameters make it too large or small to read.
 
+When the chart changes sizes due to changes to inputs, first expand the chart out with an animation, then scale down with an animation.
+
 Enable the user to compare different possibilities - implement snapshot functionality, and display snapshots (perhaps as scaled-down versions of the chart UI).
 
 Todos:
