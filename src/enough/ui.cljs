@@ -81,7 +81,7 @@
             (dom/button
               #js {:onClick
                    (fn [e]
-                     (let [new-value (coerce-to-type-of value field-value)]
+                     (let [new-value (if field-value (coerce-to-type-of value field-value) value)]
                        (om/transact! this 
                          `[(parameters/update 
                              {:name ~name 
