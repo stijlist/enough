@@ -72,7 +72,7 @@
           (dom/button
             #js {:onClick #(om/transact! this `[(parameters/update {:name ~name :editing? true})])}
             "Edit")
-          (dom/div nil
+          (dom/div #js {:className "tr"}
             (dom/label "New value:")
             (dom/input
               #js {:type "text"
