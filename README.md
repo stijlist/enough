@@ -4,7 +4,11 @@ a financial journal
 ![current state](https://raw.githubusercontent.com/stijlist/enough/master/screenshots/enough-2016-08-19.png)
 
 
+Complexity budget: 1500 lines
+
 Ideas:
+
+Snapshot forecasts in the graph & display them at a smaller size.
 
 Unify the idea of a "parameter" with the idea of an "event" - parameters are events that occur in every period of the simulation.
 
