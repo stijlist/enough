@@ -128,17 +128,15 @@
 
 (def render-year (om/factory YearUI {:keyfn :index}))
 
-(defn savings-chart [{:keys [max-bar-value data num-years]}]
-  (let [pixels-per-thousand 0.2
-        max-bar-height (* pixels-per-thousand (/ max-bar-value 1000))
-        bar-width 10
+(defn savings-chart [{:keys [max-bar-value data num-years height width]}]
+  (let [bar-width (/ width num-years)
         chart-opts
-        {:true-height max-bar-height
-         :y-scale (linear-scale [0 max-bar-value] [0 max-bar-height])
+        {:true-height height
+         :y-scale (linear-scale [0 max-bar-value] [0 height])
          :bar-width bar-width}]
     (dom/svg
       #js {:className "chart"
-           :height (str max-bar-height "px")
+           :height (str height "px")
            :width (str (* bar-width (count data)) "px")}
       (map #(render-year (om/computed % chart-opts)) data))))
 

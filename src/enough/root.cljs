@@ -31,8 +31,8 @@
           (life-event-form event-form)
           (dom/div nil 
             (map life-event life-events)))
-        (dom/div #js {:style #js {:overflow "scroll" :maxWidth "100%" :maxHeight "100%"}}
+        (dom/div nil 
           (render-chart
-            (assoc chart :life-events-index (life-events-by-year life-events))))))))
+            (assoc chart :life-events-index (life-events-by-year life-events) :height 200 :width 400)))))))
 
 (om/add-root! enough.data/reconciler Root (goog.dom/getElement "app"))
