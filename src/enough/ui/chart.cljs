@@ -90,8 +90,7 @@
         #js {:transform (translate (* index bar-width) 0)}
 
         ;; render balance
-        (dom/g
-          #js {}
+        (dom/g nil
           (dom/rect
             #js {:fill "steelblue"
                  :y (- true-height scaled-b) 
