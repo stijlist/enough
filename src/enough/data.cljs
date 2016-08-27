@@ -14,7 +14,7 @@
     {:name "Rate of return" :value 0.04 :editing? false}
     {:name "Initial savings" :value 0 :editing? false}]
    :life-events []
-   :event-form {:creating? true}})
+   :event-form {:creating? false}})
 
 (defmulti read om/dispatch)
 

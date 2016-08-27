@@ -80,7 +80,7 @@
   ;; TODO: componentWillUnmount (clean up mutations to popover container div)
   (render [this]
     (let [{:keys [index balance expenses income-growth breakdown] :as props} (om/props this)
-          {:keys [true-height bar-width y-scale text-offsets]} (om/get-computed this)
+          {:keys [true-height bar-width y-scale]} (om/get-computed this)
           {:keys [mouseover? popup]} (om/get-state this)
           scaled-b (y-scale balance)
           scaled-e (y-scale expenses)
@@ -96,8 +96,7 @@
             #js {:fill "steelblue"
                  :y (- true-height scaled-b) 
                  :height scaled-b 
-                 :width (dec bar-width)})
-          (dom/text text-offsets (thousands->k balance)))
+                 :width (dec bar-width)}))
 
         ;; render expenses
         (dom/g
@@ -116,8 +115,7 @@
             #js {:fill (if mouseover? "aquamarine" "lightcoral")
                  :y (- true-height scaled-e)
                  :height scaled-e
-                 :width (dec bar-width)})
-          (dom/text text-offsets (thousands->k expenses)))
+                 :width (dec bar-width)}))
 
         ;; render growth
         (dom/g
@@ -127,21 +125,18 @@
             #js {:fill "mediumaquamarine"
                  :y (- true-height scaled-g)
                  :height scaled-g
-                 :width (dec bar-width)}
-            (when (> scaled-g 10)
-              (dom/text text-offsets (thousands->k income-growth)))))))))
+                 :width (dec bar-width)}))))))
 
 (def render-year (om/factory YearUI {:keyfn :index}))
 
 (defn savings-chart [{:keys [max-bar-value data num-years]}]
-  (let [pixels-per-thousand 0.5
+  (let [pixels-per-thousand 0.2
         max-bar-height (* pixels-per-thousand (/ max-bar-value 1000))
-        bar-width 40
+        bar-width 10
         chart-opts
         {:true-height max-bar-height
          :y-scale (linear-scale [0 max-bar-value] [0 max-bar-height])
-         :bar-width bar-width
-         :text-offsets #js {:x (+ 7 (/ bar-width 2)) :y (- max-bar-height 3) :dy "0.15em"}}]
+         :bar-width bar-width}]
     (dom/svg
       #js {:className "chart"
            :height (str max-bar-height "px")
