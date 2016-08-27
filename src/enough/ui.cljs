@@ -54,6 +54,17 @@
   (fn [e]
     (om/update-state! component merge {k (.. e -target -value)})))
 
+(defn form-field [this label key errmap]
+  (let [value (get (om/get-state this) key)
+        errmsg (get errmap key)]
+    (dom/div #js {:className "cf w-100"}
+      (dom/div #js {:className "tr fl w-50-ns"}
+        (dom/label nil label))
+      (dom/div #js {:className "tr fl w-50-ns"}
+        (dom/input #js {:className "w-100 bg-near-white" :value value :type "text" :onChange (track-in this key)}))
+      (dom/div #js {:className "tr"}
+        (dom/span nil errmsg)))))
+
 (defui Parameter
   static om/Ident
   (ident [this {:keys [name]}]
@@ -62,6 +73,8 @@
   (query [this]
     '[:name :value :editing?])
   Object
+  (initLocalState [this]
+    {:field-value (:value (om/props this))})
   (render [this]
     (let [{:keys [name value editing?] :as props} (om/props this)
           {:keys [field-value] :as state} (om/get-state this)]
@@ -73,11 +86,7 @@
             #js {:onClick #(om/transact! this `[(parameters/update {:name ~name :editing? true})])}
             "Edit")
           (dom/div #js {:className "tr"}
-            (dom/label "New value:")
-            (dom/input
-              #js {:type "text"
-                   :value (or field-value value)
-                   :onChange (track-in this :field-value)})
+            (form-field this "New value:" :field-value nil)
             (dom/button
               #js {:onClick
                    (fn [e]
@@ -89,17 +98,6 @@
                               :editing? false}) 
                            :chart])))}
               "Save")))))))
-
-(defn form-field [this label key errmap]
-  (let [value (get (om/get-state this) key)
-        errmsg (get errmap key)]
-    (dom/div #js {:className "cf w-100"}
-      (dom/div #js {:className "tr fl w-50-ns"}
-        (dom/label nil label))
-      (dom/div #js {:className "tr fl w-50-ns"}
-        (dom/input #js {:className "w-100 bg-near-white" :value value :type "text" :onChange (track-in this key)}))
-      (dom/div #js {:className "tr"}
-        (dom/span nil errmsg)))))
 
 (def init-form-state {:name "" :cost "0" :index "0" :duration "1" :costs-per-year {}})
 
