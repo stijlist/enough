@@ -1,10 +1,12 @@
 (ns enough.ui.chart
-  (:require [om.dom :as dom]
-            [om.next :as om :refer-macros [defui]]
-            [goog.dom]
-            [goog.ui.Popup]
-            [goog.positioning.AnchoredPosition]
-            [goog.positioning.Corner]))
+  (:require 
+    [om.dom :as dom]
+    [om.next :as om :refer-macros [defui]]
+    [goog.dom])
+  (:import
+    goog.ui.Popup
+    goog.positioning.AnchoredPosition
+    goog.positioning.Corner))
 
 (defrecord Year [^number index ^number balance ^number income-growth ^number expenses breakdown])
 
