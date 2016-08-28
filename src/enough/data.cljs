@@ -14,7 +14,8 @@
     {:name "Rate of return" :value 0.04 :editing? false}
     {:name "Initial savings" :value 0 :editing? false}]
    :life-events []
-   :event-form {:creating? false}})
+   :event-form {:creating? false}
+   :snapshots []})
 
 (defmulti read om/dispatch)
 
@@ -83,6 +84,10 @@
                           (update :life-events conj ident)
                           (assoc-in [:event-form :creating?] false))]
     {:action #(swap! state add-life-event)}))
+
+(defmethod mutate 'chart/snapshot
+  [{:keys [state]} key params]
+  {:action #(swap! state update :snapshots conj params)})
 
 (def parser (om/parser {:read read :mutate mutate}))
 (def reconciler (om/reconciler {:state init-data :parser parser}))

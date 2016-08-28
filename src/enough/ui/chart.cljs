@@ -1,5 +1,6 @@
 (ns enough.ui.chart
   (:require 
+    [enough.data :refer [life-events-by-year]]
     [om.dom :as dom]
     [om.next :as om :refer-macros [defui]]
     [goog.dom])
@@ -143,8 +144,23 @@
       (map #(render-year (om/computed % chart-opts)) data))))
 
 (defui SavingsChart
+  static om/IQuery
+  (query [this]
+    '[:chart {:life-events [:costs-per-year]}])
   Object
   (render [this]
-    (-> (om/props this)
-      years-til-retirement 
-      savings-chart)))
+    (let [{:keys [chart life-events] :as props} (om/props this)
+          params
+          (assoc chart
+            :life-events-index (life-events-by-year life-events)
+            :height 200
+            :width 400)
+          simulation (years-til-retirement params)]
+      (dom/div nil
+        (savings-chart simulation)
+        (dom/div nil
+          (dom/button
+            #js {:onClick
+                 #(om/transact! this `[(chart/snapshot ~simulation)])}
+          "Snapshot")
+          (dom/span #js {:className "ma1"} (str "(" (:num-years simulation) " years til retirement)")))))))

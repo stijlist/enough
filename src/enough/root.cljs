@@ -1,6 +1,6 @@
 (ns enough.root
   (:require
-    [enough.data :refer [life-events-by-year]]
+    [enough.data]
     [enough.ui :refer [Parameter LifeEvent LifeEventForm]]
     [enough.ui.chart :refer [SavingsChart]]
     [om.next :as om :refer [defui]]
@@ -18,10 +18,10 @@
     `[{:parameters ~(om/get-query Parameter)}
       {:life-events ~(om/get-query LifeEvent)}
       {:event-form ~(om/get-query LifeEventForm)}
-      :chart])
+      {:chart ~(om/get-query SavingsChart)}])
   Object
   (render [this]
-    (let [{:keys [parameters chart life-events event-form] :as props} (om/props this)]
+    (let [{:keys [parameters life-events event-form] :as props} (om/props this)]
       (dom/div 
         #js {:className "pa0 bg-near-white black-80"}
         (dom/h2 #js {:className "f4 bb w-50"} "Parameters")
@@ -32,7 +32,6 @@
           (dom/div nil 
             (map life-event life-events)))
         (dom/div nil 
-          (render-chart
-            (assoc chart :life-events-index (life-events-by-year life-events) :height 200 :width 400)))))))
+          (render-chart props))))))
 
 (om/add-root! enough.data/reconciler Root (goog.dom/getElement "app"))
