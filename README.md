@@ -36,6 +36,12 @@ Differentiate the expense breakdown popover from the surrounding content.
 
 Set up a regression test suite for reads, mutations, and chart calculations.
 
+Choose a target set of UI components to render above-the-fold.
+
+Instrument above-the-fold render payload - HTML, CSS, and JS should be < 14k.
+
+Implement server-side rendering to remove JS execution latency from UI rendering and to enable users that don't have JS enabled.
+
 Archive:
 Align form fields and edit buttons. @done
 Make chart segments interactive. On mouseover, highlight and provide a breakdown of the expenses, revenue growth, or income for that segment. @done
