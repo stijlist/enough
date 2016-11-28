@@ -152,9 +152,7 @@
     (let [{:keys [chart life-events] :as props} (om/props this)
           params
           (assoc chart
-            :life-events-index (life-events-by-year life-events)
-            :height 200
-            :width 400)
+            :life-events-index (life-events-by-year life-events))
           simulation (years-til-retirement params)]
       (dom/div nil
         (savings-chart simulation)

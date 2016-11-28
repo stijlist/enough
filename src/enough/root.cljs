@@ -34,4 +34,12 @@
         (dom/div nil 
           (render-chart props))))))
 
+(defn resize-handler [e]
+  (om/transact!
+    enough.data/reconciler
+    `[(window/resize {:height ~(.-innerHeight js/window)
+                      :width ~(.-innerWidth js/window)})]))
+
+(.addEventListener js/window "resize" resize-handler)
+
 (om/add-root! enough.data/reconciler Root (goog.dom/getElement "app"))

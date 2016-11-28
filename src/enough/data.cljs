@@ -15,7 +15,9 @@
     {:name "Initial savings" :value 0 :editing? false}]
    :life-events []
    :event-form {:creating? false}
-   :snapshots []})
+   :snapshots []
+   :window-size {:height (.-innerHeight js/window)
+                 :width (.-innerWidth js/window)}})
 
 (defmulti read om/dispatch)
 
@@ -54,9 +56,13 @@
   (let [s @state
         parameters (om/db->tree '[*] (get s :parameters) s)
         pname->pvalue (into {} (map (juxt :name :value)) parameters)
+        dimensions (-> (:window-size s)
+                     (update :height #(/ % 2))
+                     (update :width #(/ % 2)))
         chart (-> pname->pvalue
                 (set/rename-keys ident->chart-key)
-                (assoc :cutoff 65))]
+                (assoc :cutoff 65)
+                (merge dimensions))]
     {:value chart}))
 
 (defmulti mutate om/dispatch)
@@ -88,6 +94,10 @@
 (defmethod mutate 'chart/snapshot
   [{:keys [state]} key params]
   {:action #(swap! state update :snapshots conj params)})
+
+(defmethod mutate 'window/resize
+  [{:keys [state]} key params]
+  {:action #(swap! state assoc :window-size params)})
 
 (def parser (om/parser {:read read :mutate mutate}))
 (def reconciler (om/reconciler {:state init-data :parser parser}))
