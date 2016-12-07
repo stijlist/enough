@@ -12,7 +12,7 @@
 (defrecord Year [^number index ^number balance ^number income-growth ^number expenses breakdown])
 
 (defn years-til-retirement
-  [{:keys [^number salary ^number expenses ^number rate-of-return ^number initial-savings ^number cutoff life-events-index] :as input}]
+  [{:keys [^number salary ^number expenses ^number rate-of-return ^number initial-savings ^number cutoff life-events-index life-event-constants] :as input}]
   (loop [years (transient []) balance initial-savings this-year 0]
     (let [growth (* balance rate-of-return)
           expense-breakdown (get life-events-index this-year)
@@ -145,14 +145,18 @@
 (defui SavingsChart
   static om/IQuery
   (query [this]
-    '[:chart {:life-events [:costs-per-year]}])
+         ;; NOTE: the constant? on the subquery isn't getting picked up
+         ;; plausibly because the :chart read doesn't do that composition
+    '[:some #_:chart #_{:life-events [constant? :costs-per-year]}])
   Object
   (render [this]
     (let [{:keys [chart life-events] :as props} (om/props this)
           params
           (assoc chart
-            :life-events-index (life-events-by-year life-events))
+            :life-events-index (life-events-by-year life-events)
+            :life-event-constants (filter :constant? life-events))
           simulation (years-til-retirement params)]
+      (prn "constants" life-events)
       (dom/div nil
         (savings-chart simulation)
         (dom/div nil

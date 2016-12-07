@@ -24,14 +24,16 @@
     [:life-events/by-name name])
   static om/IQuery
   (query [this]
-    '[:name :costs-per-year])
+    ;; TODO: :constant? is only needed by enough.ui.chart/SavingsChart
+    ;; Move to SavingsChart query when https://github.com/omcljs/om/issues/823
+    ;; has a solution.
+    '[:name :costs-per-year :constant?])
   Object
   (render [this]
     (let [{:keys [name costs-per-year] :as props} (om/props this)
           {:keys [expanded?]} (om/get-state this)
           total-cost (reduce + (vals costs-per-year))
           expanded? (or expanded? false)]
-      (prn "re-render LifeEvent" props)
       (apply dom/div nil
         (dom/div nil
           (str name " $" total-cost " total. ")
@@ -107,11 +109,12 @@
 
 (def parsed-nat? (comp nat-int? parse-int))
 
-(s/def ::form-data (s/keys :req-un [::name ::cost ::index ::duration ::costs-per-year]))
+(s/def ::form-data (s/keys :req-un [::name ::cost ::index ::duration ::costs-per-year ::constant?]))
 (s/def ::name not-empty)
 (s/def ::cost parse-int)
 (s/def ::index (s/and parse-int parsed-nat?))
 (s/def ::costs-per-year not-empty)
+(s/def ::constant? boolean?)
 
 (def messages
   {:name "Enter a name for this event."
@@ -130,7 +133,7 @@
     init-form-state)
   (render [this]
     (let [{:keys [creating?] :as props} (om/props this)
-          {:keys [name cost index duration costs-per-year] :as pending} (om/get-state this)
+          {:keys [name cost index duration constant? costs-per-year] :as pending} (om/get-state this)
           form-data (s/conform ::form-data pending)
           numeric-keys [:cost :index :duration]
           errors (when (= form-data :cljs.spec/invalid)
@@ -141,8 +144,6 @@
                           (merge form-data)))
           error-keys (into #{} (map (comp peek :in)) (get errors :cljs.spec/problems))
           error-map (select-keys messages error-keys)]
-
-      (prn "re-render form" props)
 
       ;; button to create new life event
       (if (not creating?)
@@ -159,6 +160,9 @@
           (form-field this "Cost of event:" :cost error-map)
           (form-field this "Years from now:" :index error-map)
           (form-field this "Recurring (years)?" :duration error-map)
+          (dom/label nil "Constant?")
+          (dom/input #js {:type "checkbox" :value "constant"
+                          :onClick #(om/update-state! this merge {:constant? (.. % -target -checked)})})
 
           ;; buttons: add cost, cancel, done
           (dom/div nil
