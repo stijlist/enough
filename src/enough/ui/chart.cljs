@@ -138,8 +138,7 @@
          :y-scale (linear-scale [0 max-bar-value] [0 height])
          :bar-width bar-width}]
     (dom/svg
-      #js {:className "chart"
-           :height (str height "px")
+      #js {:height (str height "px")
            :width (str (* bar-width (count data)) "px")}
       (map #(render-year (om/computed % chart-opts)) data))))
 

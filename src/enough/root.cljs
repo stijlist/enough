@@ -23,11 +23,10 @@
   (render [this]
     (let [{:keys [parameters life-events event-form] :as props} (om/props this)]
       (dom/div 
-        #js {:className "pa0 bg-near-white black-80"}
-        (dom/h2 #js {:className "f4 bb w-50"} "Parameters")
+        nil
         (dom/div nil (map parameter parameters))
-        (dom/div #js {:className "w-50"}
-          (dom/h2 #js {:className "f4 bb"} "Life events")
+        (dom/div nil
+          (dom/h2 nil "Life events")
           (life-event-form event-form)
           (dom/div nil 
             (map life-event life-events)))

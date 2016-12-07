@@ -57,12 +57,12 @@
 (defn form-field [this label key errmap]
   (let [value (get (om/get-state this) key)
         errmsg (get errmap key)]
-    (dom/div #js {:className "cf w-100"}
-      (dom/div #js {:className "tr fl w-50-ns"}
+    (dom/div nil
+      (dom/div nil
         (dom/label nil label))
-      (dom/div #js {:className "tr fl w-50-ns"}
-        (dom/input #js {:className "w-100 bg-near-white" :value value :type "text" :onChange (track-in this key)}))
-      (dom/div #js {:className "tr"}
+      (dom/div nil
+        (dom/input #js {:value value :type "text" :onChange (track-in this key)}))
+      (dom/div 
         (dom/span nil errmsg)))))
 
 (defui Parameter
@@ -78,14 +78,14 @@
   (render [this]
     (let [{:keys [name value editing?] :as props} (om/props this)
           {:keys [field-value] :as state} (om/get-state this)]
-      (dom/div #js {:className "cf w-50"}
-        (dom/span #js {:className "fl w-50 tr"} (str name ": "))
-        (dom/span #js {:className "fl w-25 tl pl1"} value)
+      (dom/div nil
+        (dom/span nil (str name ": "))
+        (dom/span nil value)
         (if (not editing?)
           (dom/button
             #js {:onClick #(om/transact! this `[(parameters/update {:name ~name :editing? true})])}
             "Edit")
-          (dom/div #js {:className "tr"}
+          (dom/div nil
             (form-field this "New value:" :field-value nil)
             (dom/button
               #js {:onClick
@@ -152,21 +152,21 @@
             "New"))
 
         ;; forms for event name, cost, years from now, recurring
-        (dom/div #js {:className ""}
+        (dom/div nil
           (form-field this "Event name:" :name error-map)
           (when-not (empty? costs-per-year)
-            (dom/div #js {:className "tr"} (render-costs-per-year costs-per-year)))
+            (dom/div nil (render-costs-per-year costs-per-year)))
           (form-field this "Cost of event:" :cost error-map)
           (form-field this "Years from now:" :index error-map)
           (form-field this "Recurring (years)?" :duration error-map)
 
           ;; buttons: add cost, cancel, done
-          (dom/div #js {:className "tr"}
-            (dom/div #js {:className "mv1"}
+          (dom/div nil
+            (dom/div nil
               (dom/button
                 #js {:onClick #(om/update-state! this update :costs-per-year assoc (js/parseInt index) (js/parseInt cost))}
                 "Add cost"))
-            (dom/div #js {:className "mv1"}
+            (dom/div nil
               (dom/button
                 #js {:onClick
                      #(do
