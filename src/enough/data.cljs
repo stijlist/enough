@@ -51,14 +51,16 @@
   [{:keys [state]} key params]
   {:value (get @state :event-form)})
 
+(defn clamp [n] (fn [x] (if (> x n) n x)))
+
 (defmethod read :chart
   [{:keys [state]} key params]
   (let [s @state
         parameters (om/db->tree '[*] (get s :parameters) s)
         pname->pvalue (into {} (map (juxt :name :value)) parameters)
         dimensions (-> (:window-size s)
-                     (update :height #(/ % 2))
-                     (update :width #(/ % 2)))
+                     (update :height (clamp 400))
+                     (update :width (clamp 600)))
         chart (-> pname->pvalue
                 (set/rename-keys ident->chart-key)
                 (assoc :cutoff 65)

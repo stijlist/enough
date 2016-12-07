@@ -23,7 +23,7 @@
   (render [this]
     (let [{:keys [parameters life-events event-form] :as props} (om/props this)]
       (dom/div 
-        nil
+        #js {:style #js {:margin "0 auto" :max-width 600}}
         (dom/div nil (map parameter parameters))
         (dom/div nil
           (dom/h2 nil "Life events")
