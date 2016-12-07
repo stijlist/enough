@@ -10,6 +10,8 @@ Ideas:
 
 Snapshot forecasts in the graph & display them at a smaller size.
 
+Center the forecast chart.
+
 Unify the idea of a "parameter" with the idea of an "event" - parameters are events that occur in every period of the simulation.
 
 Provide more powerful event specifications - recurring events, periodic events, and events that change over time.
