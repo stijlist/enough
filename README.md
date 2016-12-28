@@ -26,6 +26,8 @@ Todos:
 
 Unify the idea of a "parameter" with the idea of an "event" - parameters are events that occur in every period of the simulation.
 
+Understand why checking/un-checking the constant box is delayed until the form fields affected by checking/un-checking are hidden.
+
 Move event form state out of component-local state.
 
 Differentiate the pending life event from the pending costs in the visual hierarchy of the life event form.

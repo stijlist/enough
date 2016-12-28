@@ -24,19 +24,18 @@
     [:life-events/by-name name])
   static om/IQuery
   (query [this]
-    ;; TODO: :constant? is only needed by enough.ui.chart/SavingsChart
-    ;; Move to SavingsChart query when https://github.com/omcljs/om/issues/823
-    ;; has a solution.
-    '[:name :costs-per-year :constant?])
+    '[:name :costs-per-year :cost :constant?])
   Object
   (render [this]
-    (let [{:keys [name costs-per-year] :as props} (om/props this)
+    (let [{:keys [name costs-per-year constant?] :as props} (om/props this)
           {:keys [expanded?]} (om/get-state this)
-          total-cost (reduce + (vals costs-per-year))
+          total-cost (if constant? (:cost props) (reduce + (vals costs-per-year)))
           expanded? (or expanded? false)]
       (apply dom/div nil
         (dom/div nil
-          (str name " $" total-cost " total. ")
+          (if constant?
+            (str name " $" total-cost " per year. ")
+            (str name " $" total-cost " total. "))
           (if (not expanded?)
             (dom/button
               #js {:onClick 
@@ -109,12 +108,17 @@
 
 (def parsed-nat? (comp nat-int? parse-int))
 
-(s/def ::form-data (s/keys :req-un [::name ::cost ::index ::duration ::costs-per-year ::constant?]))
+(s/def ::form-data
+  (s/or
+    :event-fields
+    (s/keys :req-un [::name ::cost ::index ::duration ::costs-per-year])
+    :constant-field
+    (s/keys :req-un [::name ::cost ::constant?])))
 (s/def ::name not-empty)
 (s/def ::cost parse-int)
 (s/def ::index (s/and parse-int parsed-nat?))
 (s/def ::costs-per-year not-empty)
-(s/def ::constant? boolean?)
+(s/def ::constant? (s/and boolean? true?))
 
 (def messages
   {:name "Enter a name for this event."
@@ -134,7 +138,8 @@
   (render [this]
     (let [{:keys [creating?] :as props} (om/props this)
           {:keys [name cost index duration constant? costs-per-year] :as pending} (om/get-state this)
-          form-data (s/conform ::form-data pending)
+          conformed-data (s/conform ::form-data pending)
+          form-data (when-not (= :cljs.spec/invalid conformed-data) (second conformed-data))
           numeric-keys [:cost :index :duration]
           errors (when (= form-data :cljs.spec/invalid)
                    (s/explain-data ::form-data pending))
@@ -158,8 +163,10 @@
           (when-not (empty? costs-per-year)
             (dom/div nil (render-costs-per-year costs-per-year)))
           (form-field this "Cost of event:" :cost error-map)
-          (form-field this "Years from now:" :index error-map)
-          (form-field this "Recurring (years)?" :duration error-map)
+          (when (not constant?)
+            (dom/div nil
+              (form-field this "Years from now:" :index error-map)
+              (form-field this "Recurring (years)?" :duration error-map)))
           (dom/label nil "Constant?")
           (dom/input #js {:type "checkbox" :value "constant"
                           :onClick #(om/update-state! this merge {:constant? (.. % -target -checked)})})
@@ -167,9 +174,10 @@
           ;; buttons: add cost, cancel, done
           (dom/div nil
             (dom/div nil
-              (dom/button
-                #js {:onClick #(om/update-state! this update :costs-per-year assoc (js/parseInt index) (js/parseInt cost))}
-                "Add cost"))
+              (if (not constant?)
+                (dom/button
+                  #js {:onClick #(om/update-state! this update :costs-per-year assoc (js/parseInt index) (js/parseInt cost))}
+                  "Add cost")))
             (dom/div nil
               (dom/button
                 #js {:onClick

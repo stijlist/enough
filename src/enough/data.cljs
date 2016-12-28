@@ -41,8 +41,7 @@
   [{:keys [state query]} key params]
   (let [s @state
         ret (om/db->tree query (get s key) s)]
-    (prn "what is the life events query" query)
-    (prn "returned life events" ret)
+    (prn "read life events" ret)
     {:value ret}))
 
 (def ident->chart-key
@@ -86,6 +85,8 @@
 
 (defmethod mutate 'events/save
   [{:keys [state]} key params]
+  (when-not (:name params)
+    (throw (ex-info "Name of event cannot be null or empty" params)))
   (let [pending params
         ident [:life-events/by-name (:name params)]
         add-life-event #(-> %

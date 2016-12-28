@@ -18,11 +18,15 @@
           expense-breakdown (get life-events-index this-year)
           get-costs-this-year (map #(get-in % [:costs-per-year this-year]))
           variable-costs (transduce get-costs-this-year + expense-breakdown)
-          total-costs (+ expenses variable-costs)
+          constant-costs (transduce (comp (map :cost) (filter identity)) + life-event-constants)
+          ;; TODO: when transacting events/save, constant costs in simulation are first the correct number and then zero
+          ;; _ (prn "constant life events in simulation" life-event-constants)
+          ;; _ (prn "constant costs in simulation" constant-costs)
+          total-costs (+ expenses variable-costs constant-costs)
           new-balance (- (+ balance salary growth) total-costs)
           done? (or 
                   (>= this-year cutoff)
-                  (>= growth expenses)
+                  (>= growth (+ expenses constant-costs))
                   (< balance 0))
           next (conj! years (Year. this-year new-balance growth total-costs expense-breakdown))]
       (if done?
@@ -145,18 +149,17 @@
 (defui SavingsChart
   static om/IQuery
   (query [this]
-         ;; NOTE: the constant? on the subquery isn't getting picked up
-         ;; plausibly because the :chart read doesn't do that composition
-    '[:some #_:chart #_{:life-events [constant? :costs-per-year]}])
+    '[:chart])
   Object
   (render [this]
+    (prn "re-render SavingsChart")
     (let [{:keys [chart life-events] :as props} (om/props this)
           params
           (assoc chart
             :life-events-index (life-events-by-year life-events)
             :life-event-constants (filter :constant? life-events))
+          _ (prn "life events in SavingsChart" life-events)
           simulation (years-til-retirement params)]
-      (prn "constants" life-events)
       (dom/div nil
         (savings-chart simulation)
         (dom/div nil
