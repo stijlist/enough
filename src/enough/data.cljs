@@ -21,11 +21,6 @@
 
 (defmulti read om/dispatch)
 
-(defmethod read :parameters
-  [{:keys [state query]} key params]
-  (let [s @state]
-    {:value (om/db->tree query (get s key) s)}))
-
 (defn life-events-by-year [life-events]
   (letfn [(assoc-set [m [k v]]
             (if-not (contains? m k)
