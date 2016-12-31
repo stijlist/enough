@@ -44,7 +44,7 @@
     {:value ret}))
 
 (def ident->chart-key
-  {"Salary" :salary "Expenses" :expenses "Rate of return" :rate-of-return "Initial savings" :initial-savings})
+  {"Salary" :salary "Rate of return" :rate-of-return "Initial savings" :initial-savings})
 
 (defmethod read :event-form
   [{:keys [state]} key params]
