@@ -152,13 +152,12 @@
     '[:chart])
   Object
   (render [this]
-    (prn "re-render SavingsChart")
     (let [{:keys [chart life-events] :as props} (om/props this)
+          _ (assert (not (nil? life-events)) "Life events cannot be nil")
           params
           (assoc chart
             :life-events-index (life-events-by-year life-events)
             :life-event-constants (filter :constant? life-events))
-          _ (prn "life events in SavingsChart" life-events)
           simulation (years-til-retirement params)]
       (dom/div nil
         (savings-chart simulation)

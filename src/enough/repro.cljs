@@ -21,25 +21,20 @@
     '[:b-subquery]))
 
 (defmulti read om/dispatch)
-;;TODO: do we even need to involve the state atom?
+
 (defmethod read :a
-  [e k p]
-  {:value {:some :a-value}})
-;;TODO - we probably need to involve db->tree here to repro
+  [{:keys [state query]} key params]
+  (let [s @state
+        ret (om/db->tree query (get s key) s)]
+    {:value ret}))
+
+;;TODO: do we even need to involve the state atom in the read for b?
 (defmethod read :b
   [e k p]
   {:value {:some :b-value}})
 
-(comment
-(defmethod read :life-events
-  [{:keys [state query]} key params]
-  (let [s @state
-        ret (om/db->tree query (get s key) s)]
-    (prn "read life events" ret)
-    {:value ret}))
-)
-
 (defmulti mutate om/dispatch)
+
 (defmethod mutate 'transact/a
   [{:keys [state]} key params]
   (swap! state assoc :a :new))
@@ -58,7 +53,8 @@
       (render-a a)
       (render-b props))))
 
+(def parser (om/parser {:read read :mutate mutate}))
+
 (comment
-  ;; get instance of A somehow as `this`
   (let [this nil]
-    (om/transact! this [(transact/a :something) :a :b])))
+    (om/transact! parser [(transact/a :something) :a :b])))
