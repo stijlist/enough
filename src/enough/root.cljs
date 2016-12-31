@@ -1,32 +1,26 @@
 (ns enough.root
   (:require
-    [enough.data]
     [om.next :as om :refer [defui]]
     [om.dom :as dom]
     [goog.dom]))
 
+(def init-data {})
+
+(defmulti read om/dispatch)
+(defmethod read :life-events [_ _ _]
+  {:value {}})
+(defmethod read :chart [_ _ _]
+  {:value {}})
+
+(defmulti mutate om/dispatch)
+(defmethod mutate 'events/save
+  [{:keys [state]} key params]
+  {:action #(swap! state identity)})
+
+(def parser (om/parser {:read read :mutate mutate}))
+(def reconciler (om/reconciler {:state init-data :parser parser}))
+
 (def static-txn {:name "Test"})
-
-(defui LifeEvent
-  static om/Ident
-  (ident [this {:keys [name]}]
-    [:life-events/by-name name])
-  static om/IQuery
-  (query [this]
-    '[:name :costs-per-year :cost :constant?])
-  Object
-  (render [this]))
-
-(defui LifeEventForm
-  static om/IQuery
-  (query [this]
-    [:creating?])
-  Object
-  (render [this]
-    (let []
-      (dom/div nil
-        (dom/button #js {:onClick #(om/transact! this `[(events/save ~static-txn) :life-events])} "Doesn't repro")
-        (dom/button #js {:onClick #(om/transact! this `[(events/save ~static-txn) :life-events :chart])} "Repro")))))
 
 (defui SavingsChart
   static om/IQuery
@@ -34,28 +28,32 @@
   Object
   (render [this]
     (let [{:keys [chart life-events] :as props} (om/props this)]
-      (assert (not (nil? life-events)) "Life events cannot be nil"))))
+      (prn "re-render SavingsChart")
+      (assert (not (nil? life-events)) " events cannot be nil"))))
 
 (def render-chart (om/factory SavingsChart))
-(def life-event-form (om/factory LifeEventForm))
 
 (defui Root
   static om/IQuery
   (query [this]
-    `[{:life-events ~(om/get-query LifeEvent)}
-      {:event-form ~(om/get-query LifeEventForm)}
+    `[{:life-events [:name]}
       {:chart ~(om/get-query SavingsChart)}])
   Object
   (render [this]
     (let [{:keys [life-events] :as props} (om/props this)]
-      (prn "props are" props)
+      (prn "Root props are" props)
       (dom/div 
         #js {:style #js {:margin "0 auto" :max-width 600}}
         (dom/div nil
-          (dom/h2 nil "Life events"))
+          (dom/h2 nil " events"))
         (dom/div nil
-          (life-event-form {}))
+          (dom/button
+            #js {:onClick #(om/transact! this `[(events/save ~static-txn) :life-events])}
+            "Doesn't repro")
+          (dom/button
+            #js {:onClick #(om/transact! this `[(events/save ~static-txn) :chart])}
+            "Repro"))
         (dom/div nil
           (render-chart props))))))
 
-(om/add-root! enough.data/reconciler Root (goog.dom/getElement "app"))
+(om/add-root! reconciler Root (goog.dom/getElement "app"))
