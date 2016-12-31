@@ -190,6 +190,6 @@
                      :onMouseOver #() ;; TODO - draw eye to errors
                      :onClick
                      #(when-not errors
-                       (om/transact! this `[(events/save ~parsed-data) :life-events :chart])
+                       (om/transact! this `[(events/save ~parsed-data) :life-events])
                        (om/set-state! this init-form-state))}
                 "Done"))))))))
