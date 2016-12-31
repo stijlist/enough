@@ -100,7 +100,7 @@
                            :chart])))}
               "Save")))))))
 
-(def init-form-state {:name "" :cost "0" :index "0" :duration "1" :costs-per-year {}})
+(def init-form-state {:name "" :cost "0" :value "0" :index "0" :duration "1" :event-category "income" :costs-per-year {}})
 
 (defn parse-int [s]
   (let [parsed (js/parseInt s)]
@@ -125,6 +125,7 @@
 (def messages
   {:name "Enter a name for this event."
    :cost "An event's cost cannot be zero."
+   :value "An event's value cannot be zero."
    :index "The event must be happening this year or in the future."})
 
 (defn mapvals [f m]
@@ -139,7 +140,7 @@
     init-form-state)
   (render [this]
     (let [{:keys [creating?] :as props} (om/props this)
-          {:keys [name cost index duration constant? costs-per-year] :as pending} (om/get-state this)
+          {:keys [name cost index duration event-category constant? costs-per-year] :as pending} (om/get-state this)
           conformed-data (s/conform ::form-data pending)
           form-data (when-not (= :cljs.spec/invalid conformed-data) (second conformed-data))
           numeric-keys [:cost :index :duration]
@@ -164,7 +165,14 @@
           (form-field this "Event name:" :name error-map)
           (when-not (empty? costs-per-year)
             (dom/div nil (render-costs-per-year costs-per-year)))
-          (form-field this "Cost of event:" :cost error-map)
+          (dom/select
+            #js {:value event-category
+                 :onChange #(om/update-state! this assoc :event-category (.. % -target -value))}
+            (dom/option #js {:value "income"} "Income")
+            (dom/option #js {:value "expense"} "Expense"))
+          (case event-category
+            "income" (form-field this "Value of event:" :value error-map)
+            "expense" (form-field this "Cost of event:" :cost error-map))
           (when (not constant?)
             (dom/div nil
               (form-field this "Years from now:" :index error-map)

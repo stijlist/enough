@@ -40,7 +40,6 @@
   [{:keys [state query]} key params]
   (let [s @state
         ret (om/db->tree query (get s key) s)]
-    (prn "read life events" ret)
     {:value ret}))
 
 (def ident->chart-key
