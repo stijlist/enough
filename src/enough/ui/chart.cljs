@@ -19,9 +19,6 @@
           expense-breakdown (get life-events-index this-year)
           get-costs-this-year (map #(get-in % [:costs-per-year this-year]))
           variable-costs (transduce get-costs-this-year + expense-breakdown)
-          ;; TODO: when transacting events/save, constant costs in simulation are first the correct number and then zero
-          ;; _ (prn "constant life events in simulation" life-event-constants)
-          ;; _ (prn "constant costs in simulation" constant-costs)
           total-costs (+ expenses variable-costs)
           new-balance (- (+ balance salary growth) total-costs)
           done? (or 
