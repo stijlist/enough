@@ -13,7 +13,7 @@
     {:name "Expenses" :value 30000 :editing? false}
     {:name "Rate of return" :value 0.04 :editing? false}
     {:name "Initial savings" :value 0 :editing? false}]
-   :life-events []
+   :life-events [{:name "Expenses" :cost 30000 :constant? true}]
    :event-form {:creating? false}
    :snapshots []
    :window-size {:height (.-innerHeight js/window)
