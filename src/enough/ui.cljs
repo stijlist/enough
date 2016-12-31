@@ -66,40 +66,6 @@
       (dom/div 
         (dom/span nil errmsg)))))
 
-(defui Parameter
-  static om/Ident
-  (ident [this {:keys [name]}]
-    [:parameters/by-name name])
-  static om/IQuery
-  (query [this]
-    '[:name :value :editing?])
-  Object
-  (initLocalState [this]
-    {:field-value (:value (om/props this))})
-  (render [this]
-    (let [{:keys [name value editing?] :as props} (om/props this)
-          {:keys [field-value] :as state} (om/get-state this)]
-      (dom/div nil
-        (dom/span nil (str name ": "))
-        (dom/span nil value)
-        (if (not editing?)
-          (dom/button
-            #js {:onClick #(om/transact! this `[(parameters/update {:name ~name :editing? true})])}
-            "Edit")
-          (dom/div nil
-            (form-field this "New value:" :field-value nil)
-            (dom/button
-              #js {:onClick
-                   (fn [e]
-                     (let [new-value (if field-value (coerce-to-type-of value field-value) value)]
-                       (om/transact! this 
-                         `[(parameters/update 
-                             {:name ~name 
-                              :value ~new-value 
-                              :editing? false}) 
-                           :chart])))}
-              "Save")))))))
-
 (def init-form-state {:name "" :cost "0" :index "0" :duration "1" :costs-per-year {}})
 
 (defn parse-int [s]

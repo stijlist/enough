@@ -69,12 +69,6 @@
 
 (defmulti mutate om/dispatch)
 
-(defmethod mutate 'parameters/update
-  [{:keys [state]} key {:keys [name] :as params}]
-  {:pre [(string? name)]}
-  {:action
-   #(swap! state update-in [:parameters/by-name name] (fn [old] (merge old params)))})
-
 (defmethod mutate 'events/new
   [{:keys [state]} key params]
   {:action #(swap! state assoc-in [:event-form :creating?] true)})
