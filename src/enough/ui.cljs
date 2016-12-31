@@ -191,6 +191,6 @@
                      :onClick
                      #(when-not errors
                        ;; TODO: the explicit re-read of :chart here causes chart to be re-rendered twice, and the second time, it's missing all life event data
-                       (om/transact! this `[(events/save ~parsed-data) :life-events :chart])
+                       (om/transact! this `[(events/save ~parsed-data) :life-events])
                        (om/set-state! this init-form-state))}
                 "Done"))))))))
