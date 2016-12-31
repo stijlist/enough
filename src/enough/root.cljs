@@ -14,8 +14,7 @@
 (defui Root
   static om/IQuery
   (query [this]
-    `[
-      {:life-events ~(om/get-query LifeEvent)}
+    `[{:life-events ~(om/get-query LifeEvent)}
       {:event-form ~(om/get-query LifeEventForm)}
       {:chart ~(om/get-query SavingsChart)}])
   Object
