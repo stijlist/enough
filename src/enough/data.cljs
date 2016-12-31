@@ -10,7 +10,6 @@
 (def init-data
   {:parameters 
    [{:name "Salary" :value 40000 :editing? false}
-    {:name "Expenses" :value 30000 :editing? false}
     {:name "Rate of return" :value 0.04 :editing? false}
     {:name "Initial savings" :value 0 :editing? false}]
    :life-events [{:name "Expenses" :cost 30000 :constant? true}]

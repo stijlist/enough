@@ -12,7 +12,7 @@
 (defrecord Year [^number index ^number balance ^number income-growth ^number expenses breakdown])
 
 (defn years-til-retirement
-  [{:keys [^number salary ^number expenses ^number rate-of-return ^number initial-savings ^number cutoff life-events-index life-event-constants] :as input}]
+  [{:keys [^number salary ^number rate-of-return ^number initial-savings ^number cutoff life-events-index life-event-constants] :as input}]
   (loop [years (transient []) balance initial-savings this-year 0]
     (let [growth (* balance rate-of-return)
           expenses (transduce (comp (map :cost) (filter identity)) + life-event-constants)
@@ -152,13 +152,11 @@
     '[:chart])
   Object
   (render [this]
-    (prn "re-render SavingsChart")
     (let [{:keys [chart life-events] :as props} (om/props this)
           params
           (assoc chart
             :life-events-index (life-events-by-year life-events)
             :life-event-constants (filter :constant? life-events))
-          _ (prn "life events in SavingsChart" life-events)
           simulation (years-til-retirement params)]
       (dom/div nil
         (savings-chart simulation)
