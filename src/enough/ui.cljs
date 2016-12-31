@@ -112,8 +112,10 @@
   (s/or
     :event-fields
     (s/keys :req-un [::name ::cost ::index ::duration ::costs-per-year])
-    :constant-field
-    (s/keys :req-un [::name ::cost ::constant?])))
+    :constant-income
+    (s/keys :req-un [::name ::cost ::constant?])
+    :constant-expense
+    (s/keys :req-un [::name ::value ::constant?])))
 (s/def ::name not-empty)
 (s/def ::cost parse-int)
 (s/def ::index (s/and parse-int parsed-nat?))
