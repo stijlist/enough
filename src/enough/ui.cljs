@@ -24,12 +24,12 @@
     [:life-events/by-name name])
   static om/IQuery
   (query [this]
-    '[:name :costs-per-year :cost :constant?])
+    '[:name :costs-per-year :value :constant?])
   Object
   (render [this]
     (let [{:keys [name costs-per-year constant?] :as props} (om/props this)
           {:keys [expanded?]} (om/get-state this)
-          total-cost (if constant? (:cost props) (reduce + (vals costs-per-year)))
+          total-cost (if constant? (:value props) (reduce + (vals costs-per-year)))
           expanded? (or expanded? false)]
       (apply dom/div nil
         (dom/div nil
@@ -109,18 +109,17 @@
 (def parsed-nat? (comp nat-int? parse-int))
 
 (s/def ::form-data
-  (s/or
-    :event-fields
-    (s/keys :req-un [::name ::cost ::index ::duration ::costs-per-year])
-    :constant-income
-    (s/keys :req-un [::name ::cost ::constant?])
-    :constant-expense
-    (s/keys :req-un [::name ::value ::constant?])))
-(s/def ::name not-empty)
-(s/def ::cost parse-int)
-(s/def ::index (s/and parse-int parsed-nat?))
-(s/def ::costs-per-year not-empty)
-(s/def ::constant? (s/and boolean? true?))
+  (s/keys :req-un [::name ::value
+                   (or
+                     ::constant?
+                     (and ::index ::duration ::costs-per-year))]))
+(s/def ::name string?)
+(s/def ::value int?)
+(s/def ::index nat-int?)
+(s/def ::duration pos-int?)
+(s/def ::costs-per-year (s/map-of nat-int? ::value))
+;; TODO: replace with boolean? once we figure out why s/exercise fails for boolean values
+(s/def ::constant? #{true false})
 
 (def messages
   {:name "Enter a name for this event."
@@ -140,10 +139,9 @@
     init-form-state)
   (render [this]
     (let [{:keys [creating?] :as props} (om/props this)
-          {:keys [name cost index duration event-category constant? costs-per-year] :as pending} (om/get-state this)
-          conformed-data (s/conform ::form-data pending)
-          form-data (when-not (= :cljs.spec/invalid conformed-data) (second conformed-data))
-          numeric-keys [:cost :index :duration]
+          {:keys [name value index duration event-category constant? costs-per-year] :as pending} (om/get-state this)
+          form-data (s/conform ::form-data pending)
+          numeric-keys [:value :index :duration]
           errors (when (= form-data :cljs.spec/invalid)
                    (s/explain-data ::form-data pending))
           parsed-data (when-not errors
@@ -172,7 +170,7 @@
             (dom/option #js {:value "expense"} "Expense"))
           (case event-category
             "income" (form-field this "Value of event:" :value error-map)
-            "expense" (form-field this "Cost of event:" :cost error-map))
+            "expense" (form-field this "Cost of event:" :value error-map))
           (when (not constant?)
             (dom/div nil
               (form-field this "Years from now:" :index error-map)
@@ -186,7 +184,7 @@
             (dom/div nil
               (if (not constant?)
                 (dom/button
-                  #js {:onClick #(om/update-state! this update :costs-per-year assoc (js/parseInt index) (js/parseInt cost))}
+                  #js {:onClick #(om/update-state! this update :costs-per-year assoc (js/parseInt index) (- (js/parseInt value)))}
                   "Add cost")))
             (dom/div nil
               (dom/button

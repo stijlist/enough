@@ -15,15 +15,15 @@
   [{:keys [^number salary ^number rate-of-return ^number initial-savings ^number cutoff life-events-index life-event-constants] :as input}]
   (loop [years (transient []) balance initial-savings this-year 0]
     (let [growth (* balance rate-of-return)
-          expenses (transduce (comp (map :cost) (filter identity)) + life-event-constants)
+          expenses (transduce (comp (map :value) (filter identity)) + life-event-constants)
           expense-breakdown (get life-events-index this-year)
           get-costs-this-year (map #(get-in % [:costs-per-year this-year]))
           variable-costs (transduce get-costs-this-year + expense-breakdown)
           total-costs (+ expenses variable-costs)
-          new-balance (- (+ balance salary growth) total-costs)
+          new-balance (+ balance salary growth total-costs)
           done? (or 
                   (>= this-year cutoff)
-                  (>= growth expenses)
+                  (>= growth (js/Math.abs expenses))
                   (< balance 0))
           next (conj! years (Year. this-year new-balance growth total-costs expense-breakdown))]
       (if done?
@@ -116,8 +116,8 @@
                    (.reposition)))}
           (dom/rect
             #js {:fill (if mouseover? "aquamarine" "lightcoral")
-                 :y (- true-height scaled-e)
-                 :height scaled-e
+                 :y (+ true-height scaled-e)
+                 :height (js/Math.abs scaled-e)
                  :width (dec bar-width)}))
 
         ;; render growth
