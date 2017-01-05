@@ -112,8 +112,6 @@
   (let [parsed (js/parseInt s)]
     (when-not (js/isNaN parsed) parsed)))
 
-(def parsed-nat? (comp nat-int? parse-int))
-
 (s/def ::form-data
   (s/keys :req-un [::name
                    (or
