@@ -144,13 +144,8 @@
     (let [{:keys [creating?] :as props} (om/props this)
           {:keys [name value index duration event-category constant? costs-per-year] :as pending} (om/get-state this)
           form-data (s/conform ::form-data pending)
-          numeric-keys [:value :index :duration]
           errors (when (= form-data :cljs.spec/invalid)
                    (s/explain-data ::form-data pending))
-          parsed-data (when-not errors
-                        (->> (select-keys form-data numeric-keys)
-                          (mapvals js/parseInt)
-                          (merge form-data)))
           error-keys (into #{} (map (comp peek :in)) (get errors :cljs.spec/problems))
           error-map (select-keys messages error-keys)]
 
@@ -204,6 +199,6 @@
                      :onMouseOver #() ;; TODO - draw eye to errors
                      :onClick
                      #(when-not errors
-                       (om/transact! this `[(events/save ~parsed-data) :life-events])
+                       (om/transact! this `[(events/save ~form-data) :life-events])
                        (om/set-state! this init-form-state))}
                 "Done"))))))))
