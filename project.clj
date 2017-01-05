@@ -8,4 +8,5 @@
                  [cljsjs/react "15.1.0-0"]
                  [cljsjs/react-dom "15.1.0-0"]
                  [org.omcljs/om "1.0.0-alpha41"]
-                 [figwheel-sidecar "0.5.4" :scope "test"]])
+                 [figwheel-sidecar "0.5.4" :scope "test"]
+                 [org.clojure/test.check "0.9.0" :scope "dev"]])

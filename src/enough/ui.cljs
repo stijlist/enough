@@ -24,17 +24,18 @@
     [:life-events/by-name name])
   static om/IQuery
   (query [this]
-    '[:name :costs-per-year])
+    '[:name :costs-per-year :value :constant?])
   Object
   (render [this]
-    (let [{:keys [name costs-per-year] :as props} (om/props this)
+    (let [{:keys [name costs-per-year constant?] :as props} (om/props this)
           {:keys [expanded?]} (om/get-state this)
-          total-cost (reduce + (vals costs-per-year))
+          total-cost (if constant? (:value props) (reduce + (vals costs-per-year)))
           expanded? (or expanded? false)]
-      (prn "re-render LifeEvent" props)
       (apply dom/div nil
         (dom/div nil
-          (str name " $" total-cost " total. ")
+          (if constant?
+            (str name " $" total-cost " per year. ")
+            (str name " $" total-cost " total. "))
           (if (not expanded?)
             (dom/button
               #js {:onClick 
@@ -50,18 +51,18 @@
               "Collapse")))
         (if expanded? (render-costs-per-year costs-per-year))))))
 
-(defn track-in [component k]
+(defn track-in [component k f]
   (fn [e]
-    (om/update-state! component merge {k (.. e -target -value)})))
+    (om/update-state! component merge {k (f (.. e -target -value))})))
 
-(defn form-field [this label key errmap]
+(defn form-field [this label key parse-fn errmap]
   (let [value (get (om/get-state this) key)
         errmsg (get errmap key)]
     (dom/div nil
       (dom/div nil
         (dom/label nil label))
       (dom/div nil
-        (dom/input #js {:value value :type "text" :onChange (track-in this key)}))
+        (dom/input #js {:value value :type "text" :onChange (track-in this key parse-fn)}))
       (dom/div 
         (dom/span nil errmsg)))))
 
@@ -86,7 +87,7 @@
             #js {:onClick #(om/transact! this `[(parameters/update {:name ~name :editing? true})])}
             "Edit")
           (dom/div nil
-            (form-field this "New value:" :field-value nil)
+            (form-field this "New value:" :field-value identity nil)
             (dom/button
               #js {:onClick
                    (fn [e]
@@ -99,23 +100,34 @@
                            :chart])))}
               "Save")))))))
 
-(def init-form-state {:name "" :cost "0" :index "0" :duration "1" :costs-per-year {}})
+(def init-form-state
+  {:name ""
+   :value 0
+   :index 0
+   :duration 1
+   :event-category "income"
+   :costs-per-year {}})
 
 (defn parse-int [s]
   (let [parsed (js/parseInt s)]
     (when-not (js/isNaN parsed) parsed)))
 
-(def parsed-nat? (comp nat-int? parse-int))
-
-(s/def ::form-data (s/keys :req-un [::name ::cost ::index ::duration ::costs-per-year]))
-(s/def ::name not-empty)
-(s/def ::cost parse-int)
-(s/def ::index (s/and parse-int parsed-nat?))
-(s/def ::costs-per-year not-empty)
+(s/def ::form-data
+  (s/keys :req-un [::name
+                   (or
+                     (and ::value ::constant?)
+                     (and ::index ::duration ::costs-per-year))]))
+(s/def ::name (s/and string? not-empty))
+(s/def ::value int?)
+(s/def ::index nat-int?)
+(s/def ::duration pos-int?)
+(s/def ::costs-per-year (s/map-of nat-int? ::value))
+;; TODO: replace with boolean? once we figure out why s/exercise fails for boolean values
+(s/def ::constant? #{true false})
 
 (def messages
   {:name "Enter a name for this event."
-   :cost "An event's cost cannot be zero."
+   :value "An event's value cannot be zero."
    :index "The event must be happening this year or in the future."})
 
 (defn mapvals [f m]
@@ -130,19 +142,12 @@
     init-form-state)
   (render [this]
     (let [{:keys [creating?] :as props} (om/props this)
-          {:keys [name cost index duration costs-per-year] :as pending} (om/get-state this)
+          {:keys [name value index duration event-category constant? costs-per-year] :as pending} (om/get-state this)
           form-data (s/conform ::form-data pending)
-          numeric-keys [:cost :index :duration]
           errors (when (= form-data :cljs.spec/invalid)
                    (s/explain-data ::form-data pending))
-          parsed-data (when-not errors
-                        (->> (select-keys form-data numeric-keys)
-                          (mapvals js/parseInt)
-                          (merge form-data)))
           error-keys (into #{} (map (comp peek :in)) (get errors :cljs.spec/problems))
           error-map (select-keys messages error-keys)]
-
-      (prn "re-render form" props)
 
       ;; button to create new life event
       (if (not creating?)
@@ -153,19 +158,35 @@
 
         ;; forms for event name, cost, years from now, recurring
         (dom/div nil
-          (form-field this "Event name:" :name error-map)
+          (form-field this "Event name:" :name identity error-map)
           (when-not (empty? costs-per-year)
             (dom/div nil (render-costs-per-year costs-per-year)))
-          (form-field this "Cost of event:" :cost error-map)
-          (form-field this "Years from now:" :index error-map)
-          (form-field this "Recurring (years)?" :duration error-map)
+          (dom/select
+            #js {:value event-category
+                 :onChange #(om/update-state! this assoc :event-category (.. % -target -value))}
+            (dom/option #js {:value "income"} "Income")
+            (dom/option #js {:value "expense"} "Expense"))
+          (case event-category
+            "income" (form-field this "Value of event:" :value parse-int error-map)
+            "expense" (form-field this "Cost of event:" :value parse-int error-map))
+          (when (not constant?)
+            (dom/div nil
+              (form-field this "Years from now:" :index parse-int error-map)
+              (form-field this "Recurring (years)?" :duration parse-int error-map)))
+          (dom/label nil "Constant?")
+          (dom/input #js {:type "checkbox" :value "constant"
+                          :onClick #(om/update-state! this merge {:constant? (.. % -target -checked)})})
 
           ;; buttons: add cost, cancel, done
           (dom/div nil
             (dom/div nil
-              (dom/button
-                #js {:onClick #(om/update-state! this update :costs-per-year assoc (js/parseInt index) (js/parseInt cost))}
-                "Add cost"))
+              (if (not constant?)
+                (dom/button
+                  #js {:onClick
+                       #(let [sign (case event-category "expense" - "income" +)
+                              signed-value (sign value)]
+                         (om/update-state! this update :costs-per-year assoc index signed-value))}
+                  "Add cost")))
             (dom/div nil
               (dom/button
                 #js {:onClick
@@ -175,9 +196,9 @@
               (dom/button
                 #js {:style (when errors #js {:color "graytext"})
                      :ref :done-button
-                     :onMouseOver #() ;; TODO - draw eye to errors
+                     :onMouseOver #(when errors (prn errors)) ;; TODO - draw eye to errors
                      :onClick
                      #(when-not errors
-                       (om/transact! this `[(events/save ~parsed-data) :life-events :chart])
+                       (om/transact! this `[(events/save ~form-data) :life-events])
                        (om/set-state! this init-form-state))}
                 "Done"))))))))

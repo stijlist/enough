@@ -9,11 +9,10 @@
 
 (def init-data
   {:parameters 
-   [{:name "Salary" :value 40000 :editing? false}
-    {:name "Expenses" :value 30000 :editing? false}
-    {:name "Rate of return" :value 0.04 :editing? false}
-    {:name "Initial savings" :value 0 :editing? false}]
-   :life-events []
+   [{:name "Rate of return" :value 0.04 :editing? false}]
+   :life-events
+   [{:name "Expenses" :value -30000 :constant? true}
+    {:name "Salary" :value 40000 :constant? true}]
    :event-form {:creating? false}
    :snapshots []
    :window-size {:height (.-innerHeight js/window)
@@ -41,11 +40,10 @@
   [{:keys [state query]} key params]
   (let [s @state
         ret (om/db->tree query (get s key) s)]
-    (prn "re-read life event key" ret)
     {:value ret}))
 
 (def ident->chart-key
-  {"Salary" :salary "Expenses" :expenses "Rate of return" :rate-of-return "Initial savings" :initial-savings})
+  {"Rate of return" :rate-of-return})
 
 (defmethod read :event-form
   [{:keys [state]} key params]
@@ -63,7 +61,7 @@
                      (update :width (clamp 600)))
         chart (-> pname->pvalue
                 (set/rename-keys ident->chart-key)
-                (assoc :cutoff 65)
+                (assoc :cutoff 100)
                 (merge dimensions))]
     {:value chart}))
 
@@ -85,6 +83,8 @@
 
 (defmethod mutate 'events/save
   [{:keys [state]} key params]
+  (when-not (:name params)
+    (throw (ex-info "Name of event cannot be null or empty" params)))
   (let [pending params
         ident [:life-events/by-name (:name params)]
         add-life-event #(-> %

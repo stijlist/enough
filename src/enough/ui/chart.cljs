@@ -12,17 +12,19 @@
 (defrecord Year [^number index ^number balance ^number income-growth ^number expenses breakdown])
 
 (defn years-til-retirement
-  [{:keys [^number salary ^number expenses ^number rate-of-return ^number initial-savings ^number cutoff life-events-index] :as input}]
-  (loop [years (transient []) balance initial-savings this-year 0]
+  [{:keys [^number rate-of-return ^number cutoff life-events-index life-event-constants] :as input}]
+  (loop [years (transient []) balance 0 this-year 0]
     (let [growth (* balance rate-of-return)
+          constant-expenses (transduce (comp (map :value) (filter neg?)) + life-event-constants)
+          constant-income (transduce (comp (map :value) (filter pos?)) + life-event-constants)
           expense-breakdown (get life-events-index this-year)
           get-costs-this-year (map #(get-in % [:costs-per-year this-year]))
           variable-costs (transduce get-costs-this-year + expense-breakdown)
-          total-costs (+ expenses variable-costs)
-          new-balance (- (+ balance salary growth) total-costs)
-          done? (or 
+          total-costs (+ constant-expenses variable-costs)
+          new-balance (+ balance constant-income growth total-costs)
+          done? (or
                   (>= this-year cutoff)
-                  (>= growth expenses)
+                  (>= growth (js/Math.abs constant-expenses))
                   (< balance 0))
           next (conj! years (Year. this-year new-balance growth total-costs expense-breakdown))]
       (if done?
@@ -115,8 +117,8 @@
                    (.reposition)))}
           (dom/rect
             #js {:fill (if mouseover? "aquamarine" "lightcoral")
-                 :y (- true-height scaled-e)
-                 :height scaled-e
+                 :y (+ true-height scaled-e)
+                 :height (js/Math.abs scaled-e)
                  :width (dec bar-width)}))
 
         ;; render growth
@@ -145,13 +147,14 @@
 (defui SavingsChart
   static om/IQuery
   (query [this]
-    '[:chart {:life-events [:costs-per-year]}])
+    '[:chart])
   Object
   (render [this]
     (let [{:keys [chart life-events] :as props} (om/props this)
           params
           (assoc chart
-            :life-events-index (life-events-by-year life-events))
+            :life-events-index (life-events-by-year life-events)
+            :life-event-constants (filter :constant? life-events))
           simulation (years-til-retirement params)]
       (dom/div nil
         (savings-chart simulation)
