@@ -117,7 +117,7 @@
                    (or
                      (and ::value ::constant?)
                      (and ::index ::duration ::costs-per-year))]))
-(s/def ::name string?)
+(s/def ::name (s/and string? not-empty))
 (s/def ::value int?)
 (s/def ::index nat-int?)
 (s/def ::duration pos-int?)
