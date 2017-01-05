@@ -51,18 +51,18 @@
               "Collapse")))
         (if expanded? (render-costs-per-year costs-per-year))))))
 
-(defn track-in [component k]
+(defn track-in [component k f]
   (fn [e]
-    (om/update-state! component merge {k (.. e -target -value)})))
+    (om/update-state! component merge {k (f (.. e -target -value))})))
 
-(defn form-field [this label key errmap]
+(defn form-field [this label key parse-fn errmap]
   (let [value (get (om/get-state this) key)
         errmsg (get errmap key)]
     (dom/div nil
       (dom/div nil
         (dom/label nil label))
       (dom/div nil
-        (dom/input #js {:value value :type "text" :onChange (track-in this key)}))
+        (dom/input #js {:value value :type "text" :onChange (track-in this key parse-fn)}))
       (dom/div 
         (dom/span nil errmsg)))))
 
@@ -87,7 +87,7 @@
             #js {:onClick #(om/transact! this `[(parameters/update {:name ~name :editing? true})])}
             "Edit")
           (dom/div nil
-            (form-field this "New value:" :field-value nil)
+            (form-field this "New value:" :field-value identity nil)
             (dom/button
               #js {:onClick
                    (fn [e]
@@ -100,7 +100,13 @@
                            :chart])))}
               "Save")))))))
 
-(def init-form-state {:name "" :cost "0" :value "0" :index "0" :duration "1" :event-category "income" :costs-per-year {}})
+(def init-form-state
+  {:name ""
+   :value 0
+   :index 0
+   :duration 1
+   :event-category "income"
+   :costs-per-year {}})
 
 (defn parse-int [s]
   (let [parsed (js/parseInt s)]
@@ -160,7 +166,7 @@
 
         ;; forms for event name, cost, years from now, recurring
         (dom/div nil
-          (form-field this "Event name:" :name error-map)
+          (form-field this "Event name:" :name identity error-map)
           (when-not (empty? costs-per-year)
             (dom/div nil (render-costs-per-year costs-per-year)))
           (dom/select
@@ -169,12 +175,12 @@
             (dom/option #js {:value "income"} "Income")
             (dom/option #js {:value "expense"} "Expense"))
           (case event-category
-            "income" (form-field this "Value of event:" :value error-map)
-            "expense" (form-field this "Cost of event:" :value error-map))
+            "income" (form-field this "Value of event:" :value parse-int error-map)
+            "expense" (form-field this "Cost of event:" :value parse-int error-map))
           (when (not constant?)
             (dom/div nil
-              (form-field this "Years from now:" :index error-map)
-              (form-field this "Recurring (years)?" :duration error-map)))
+              (form-field this "Years from now:" :index parse-int error-map)
+              (form-field this "Recurring (years)?" :duration parse-int error-map)))
           (dom/label nil "Constant?")
           (dom/input #js {:type "checkbox" :value "constant"
                           :onClick #(om/update-state! this merge {:constant? (.. % -target -checked)})})
