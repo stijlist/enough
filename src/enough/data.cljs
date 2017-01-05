@@ -9,8 +9,7 @@
 
 (def init-data
   {:parameters 
-   [{:name "Rate of return" :value 0.04 :editing? false}
-    {:name "Initial savings" :value 0 :editing? false}]
+   [{:name "Rate of return" :value 0.04 :editing? false}]
    :life-events
    [{:name "Expenses" :value -30000 :constant? true}
     {:name "Salary" :value 40000 :constant? true}]
@@ -44,7 +43,7 @@
     {:value ret}))
 
 (def ident->chart-key
-  {"Salary" :salary "Rate of return" :rate-of-return "Initial savings" :initial-savings})
+  {"Rate of return" :rate-of-return})
 
 (defmethod read :event-form
   [{:keys [state]} key params]

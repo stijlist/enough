@@ -12,8 +12,8 @@
 (defrecord Year [^number index ^number balance ^number income-growth ^number expenses breakdown])
 
 (defn years-til-retirement
-  [{:keys [^number rate-of-return ^number initial-savings ^number cutoff life-events-index life-event-constants] :as input}]
-  (loop [years (transient []) balance initial-savings this-year 0]
+  [{:keys [^number rate-of-return ^number cutoff life-events-index life-event-constants] :as input}]
+  (loop [years (transient []) balance 0 this-year 0]
     (let [growth (* balance rate-of-return)
           constant-expenses (transduce (comp (map :value) (filter neg?)) + life-event-constants)
           constant-income (transduce (comp (map :value) (filter pos?)) + life-event-constants)
@@ -22,7 +22,7 @@
           variable-costs (transduce get-costs-this-year + expense-breakdown)
           total-costs (+ constant-expenses variable-costs)
           new-balance (+ balance constant-income growth total-costs)
-          done? (or 
+          done? (or
                   (>= this-year cutoff)
                   (>= growth (js/Math.abs constant-expenses))
                   (< balance 0))
