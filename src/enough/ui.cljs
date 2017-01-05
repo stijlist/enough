@@ -127,7 +127,6 @@
 
 (def messages
   {:name "Enter a name for this event."
-   :cost "An event's cost cannot be zero."
    :value "An event's value cannot be zero."
    :index "The event must be happening this year or in the future."})
 
