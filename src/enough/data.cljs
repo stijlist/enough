@@ -61,7 +61,7 @@
                      (update :width (clamp 600)))
         chart (-> pname->pvalue
                 (set/rename-keys ident->chart-key)
-                (assoc :cutoff 65)
+                (assoc :cutoff 100)
                 (merge dimensions))]
     {:value chart}))
 
