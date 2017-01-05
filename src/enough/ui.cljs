@@ -196,7 +196,7 @@
               (dom/button
                 #js {:style (when errors #js {:color "graytext"})
                      :ref :done-button
-                     :onMouseOver #() ;; TODO - draw eye to errors
+                     :onMouseOver #(when errors (prn errors)) ;; TODO - draw eye to errors
                      :onClick
                      #(when-not errors
                        (om/transact! this `[(events/save ~form-data) :life-events])
