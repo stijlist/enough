@@ -12,6 +12,9 @@ Snapshot forecasts in the graph & display them at a smaller size.
 
 Provide more powerful event specifications - recurring events, periodic events, and events that change over time.
 
+Implement "accounts," which can grow and shrink based on percentages and
+volatility.
+
 Make the user interface for creating new life events accessible from the chart UI.
 
 Implement something akin to exponential decay for the granularity of the simulation - forecast the next few days, the next few months, the next few years, and the next few decades.
@@ -23,8 +26,6 @@ When the chart changes sizes due to changes to inputs, first expand the chart ou
 Enable the user to compare different possibilities - implement snapshot functionality, and display snapshots (perhaps as scaled-down versions of the chart UI).
 
 Todos:
-
-Unify the idea of a "parameter" with the idea of an "event" - parameters are events that occur in every period of the simulation.
 
 Understand why checking/un-checking the constant box is delayed until the form fields affected by checking/un-checking are hidden.
 
@@ -44,10 +45,11 @@ Instrument above-the-fold render payload - HTML, CSS, and JS should be < 14k.
 
 Implement server-side rendering to remove JS execution latency from UI rendering and to enable users that don't have JS enabled.
 
+
 Archive:
+Unify the idea of a "parameter" with the idea of an "event" - parameters are events that occur in every period of the simulation. @done
 Align form fields and edit buttons. @done
 Make chart segments interactive. On mouseover, highlight and provide a breakdown of the expenses, revenue growth, or income for that segment. @done
 Improve error messages and feedback while creating new life events. @done
 Set up a devcards harness so we can test the UI from particular init states. @done
 Center the forecast chart. @done
-
