@@ -115,9 +115,9 @@
 (def parsed-nat? (comp nat-int? parse-int))
 
 (s/def ::form-data
-  (s/keys :req-un [::name ::value
+  (s/keys :req-un [::name
                    (or
-                     ::constant?
+                     (and ::value ::constant?)
                      (and ::index ::duration ::costs-per-year))]))
 (s/def ::name string?)
 (s/def ::value int?)
