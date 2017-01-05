@@ -187,7 +187,10 @@
             (dom/div nil
               (if (not constant?)
                 (dom/button
-                  #js {:onClick #(om/update-state! this update :costs-per-year assoc (js/parseInt index) (- (js/parseInt value)))}
+                  #js {:onClick
+                       #(let [sign (case event-category "expense" - "income" +)
+                              signed-value (sign value)]
+                         (om/update-state! this update :costs-per-year assoc index signed-value))}
                   "Add cost")))
             (dom/div nil
               (dom/button
