@@ -26,6 +26,8 @@
                   (>= this-year cutoff)
                   (>= growth (js/Math.abs constant-expenses))
                   (< balance 0))
+          ;; TODO - where to spec this?
+          _ (assert (every? js/isFinite [new-balance growth total-costs]))
           next (conj! years (Year. this-year new-balance growth total-costs expense-breakdown))]
       (if done?
         (assoc input
