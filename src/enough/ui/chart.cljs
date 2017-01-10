@@ -151,6 +151,7 @@
   Object
   (render [this]
     (let [{:keys [chart life-events] :as props} (om/props this)
+          {:keys [snapshot-fn]} (om/get-computed this)
           params
           (assoc chart
             :life-events-index (life-events-by-year life-events)
@@ -160,7 +161,8 @@
         (savings-chart simulation)
         (dom/div nil
           (dom/button
-            #js {:onClick
-                 #(om/transact! this `[(chart/snapshot ~simulation)])}
+            #js {:onClick (snapshot-fn simulation)}
           "Snapshot")
-          (dom/span #js {:className "ma1"} (str "(" (:num-years simulation) " years til retirement)")))))))
+          (dom/span #js {:className "ma1"} (str "(" (:num-years simulation) " years til retirement)"))
+          (dom/div nil
+            (map savings-chart (:snapshots chart))))))))
