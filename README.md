@@ -8,8 +8,6 @@ Complexity budget: 1500 lines
 
 Ideas:
 
-Snapshot forecasts in the graph & display them at a smaller size.
-
 Provide more powerful event specifications - recurring events, periodic events, and events that change over time.
 
 Implement "accounts," which can grow and shrink based on percentages and
@@ -47,6 +45,7 @@ Implement server-side rendering to remove JS execution latency from UI rendering
 
 
 Archive:
+Snapshot forecasts in the graph & display them at a smaller size. @done
 Unify the idea of a "parameter" with the idea of an "event" - parameters are events that occur in every period of the simulation. @done
 Align form fields and edit buttons. @done
 Make chart segments interactive. On mouseover, highlight and provide a breakdown of the expenses, revenue growth, or income for that segment. @done

@@ -62,8 +62,10 @@
         chart (-> pname->pvalue
                 (set/rename-keys ident->chart-key)
                 (assoc :cutoff 100)
-                (merge dimensions))]
-    {:value chart}))
+                (merge dimensions))
+        with-snapshots
+        (assoc chart :snapshots (map #(-> % (update :height (clamp 100)) (update :width (clamp 150))) (:snapshots s)))]
+    {:value with-snapshots}))
 
 (defmulti mutate om/dispatch)
 

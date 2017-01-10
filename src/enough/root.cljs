@@ -18,7 +18,7 @@
     `[{:parameters ~(om/get-query Parameter)}
       {:life-events ~(om/get-query LifeEvent)}
       {:event-form ~(om/get-query LifeEventForm)}
-      {:chart ~(om/get-query SavingsChart)}])
+      ~@(om/get-query SavingsChart)])
   Object
   (render [this]
     (let [{:keys [parameters life-events event-form] :as props} (om/props this)]
@@ -31,7 +31,8 @@
           (dom/div nil 
             (map life-event life-events)))
         (dom/div nil 
-          (render-chart props))))))
+          ;; TODO: transacting on `this` from SavingsChart causes no-queries error, so pass snapshot-fn
+          (render-chart (om/computed props {:snapshot-fn (fn [snapshot-result] #(om/transact! enough.data/reconciler `[(chart/snapshot ~snapshot-result)]))})))))))
 
 (defn resize-handler [e]
   (om/transact!
