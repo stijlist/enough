@@ -43,6 +43,7 @@ Implement server-side rendering to remove JS execution latency from UI rendering
 
 
 Archive:
+
 Prevent infinity / NaN result values in years-til-retirement simulation. @done
 Snapshot forecasts in the graph & display them at a smaller size. @done
 Unify the idea of a "parameter" with the idea of an "event" - parameters are events that occur in every period of the simulation. @done
