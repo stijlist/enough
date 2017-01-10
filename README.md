@@ -25,6 +25,8 @@ Todos:
 
 Understand why checking/un-checking the constant box is delayed until the form fields affected by checking/un-checking are hidden.
 
+Prevent infinity / NaN result values in years-til-retirement simulation.
+
 Move event form state out of component-local state.
 
 Differentiate the pending life event from the pending costs in the visual hierarchy of the life event form.
