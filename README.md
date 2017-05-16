@@ -8,6 +8,8 @@ Complexity budget: 1500 lines
 
 Ideas:
 
+Provide an input mechanism for what happened today, and make that the dominant screen.
+
 Provide more powerful event specifications - recurring events, periodic events, and events that change over time.
 
 Implement "accounts," which can grow and shrink based on percentages and
