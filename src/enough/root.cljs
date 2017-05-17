@@ -3,6 +3,7 @@
     [enough.data]
     [enough.ui :refer [Parameter LifeEvent LifeEventForm]]
     [enough.ui.chart :refer [SavingsChart]]
+    [enough.ui.journal :refer [JournalExpenseForm]]
     [om.next :as om :refer [defui]]
     [om.dom :as dom]
     [goog.dom]))
@@ -11,6 +12,7 @@
 (def render-chart (om/factory SavingsChart))
 (def life-event (om/factory LifeEvent {:keyfn :name}))
 (def life-event-form (om/factory LifeEventForm))
+(def journal-expense (om/factory JournalExpenseForm))
 
 (defui Root
   static om/IQuery
@@ -26,6 +28,8 @@
         #js {:style #js {:margin "0 auto" :maxWidth 600}}
         (dom/div nil (map parameter parameters))
         (dom/div nil
+          (dom/h2 nil "Today")
+          (journal-expense {:hello "hello world" :add-expense #()})
           (dom/h2 nil "Life events")
           (life-event-form event-form)
           (dom/div nil 
